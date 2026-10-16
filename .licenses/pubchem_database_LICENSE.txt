@@ -1,0 +1,5 @@
+PubChem Database Access Terms:
+https://pubchem.ncbi.nlm.nih.gov/docs/citation-guidelines
+https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest
+Accessed on: 2026-10-14T21:42:00-07:00
+PubChem is a public service of the National Center for Biotechnology Information (NCBI) at the U.S. National Library of Medicine (NLM).

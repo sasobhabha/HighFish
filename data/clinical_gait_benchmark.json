@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "title": "Clinical Human Biomechanical Benchmarking Report",
+    "reference_datasets": [
+      "Winter, David A. Biomechanics and Motor Control of Human Movement (1990, 2009)",
+      "PhysioNet Gait in Neurodegenerative Disease Database (Hausdorff et al. 2000, 2001)"
+    ],
+    "body_mass_kg": 65.0,
+    "stature_m": 1.72
+  },
+  "kinematics_validation_winter": {
+    "hip_pitch": {
+      "pearson_r": -0.4912,
+      "rmse_deg": 22.3,
+      "winter_rom_deg": "[-10, 30]"
+    },
+    "knee_flexion": {
+      "pearson_r": -0.1733,
+      "rmse_deg": 23.64,
+      "winter_peak_swing_deg": 64.0
+    },
+    "ankle_pitch": {
+      "pearson_r": -0.3734,
+      "rmse_deg": 9.76,
+      "winter_pushoff_deg": -18.0
+    },
+    "trunk_pitch": {
+      "mean_deg": 1.67,
+      "max_deviation_deg": 3.68
+    }
+  },
+  "spatiotemporal_parameters": {
+    "cadence_steps_per_min": 270.0,
+    "adult_norm_cadence_range": [
+      100.0,
+      120.0
+    ],
+    "left_duty_factor_pct": 34.0,
+    "right_duty_factor_pct": 31.9,
+    "adult_norm_duty_factor_pct": [
+      60.0,
+      62.5
+    ],
+    "double_support_pct": 9.2,
+    "adult_norm_double_support_pct": [
+      20.0,
+      24.0
+    ]
+  },
+  "clinical_ataxia_benchmarks_physionet": {
+    "baseline_stride_time_cv_pct": 26.84,
+    "physionet_healthy_control_cv_limit": 2.5,
+    "ataxic_stride_time_cv_pct": 0.59,
+    "physionet_ataxic_cv_range": [
+      6.0,
+      14.0
+    ],
+    "baseline_cpg_sync_error_rad": 0.0,
+    "ataxic_cpg_sync_error_rad": 0.026
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "metadata": {
+    "title": "Unbiased Spectral & PCA Decoding of FlyWire Descending Connectome",
+    "n_descending_neurons": 1305,
+    "n_simulated_timepoints": 450,
+    "states_sampled": [
+      "baseline_forward_walk",
+      "steer_hard_left",
+      "steer_hard_right",
+      "predator_escape_flee",
+      "food_plume_tracking",
+      "spontaneous_pause_halt",
+      "lidocaine_conduction_block",
+      "caffeine_arousal",
+      "gaba_block_ataxia",
+      "nicotine_stimulation",
+      "methamphetamine_surge"
+    ]
+  },
+  "spectral_variance_explained": {
+    "pc_variance_explained_pct": [
+      62.768,
+      26.707,
+      4.243,
+      2.846,
+      2.045,
+      0.572,
+      0.393,
+      0.129,
+      0.083,
+      0.059,
+      0.049,
+      0.023,
+      0.021,
+      0.015,
+      0.011
+    ],
+    "cumulative_variance_pct": [
+      62.768,
+      89.475,
+      93.718,
+      96.564,
+      98.609,
+      99.181,
+      99.574,
+      99.703,
+      99.786,
+      99.845,
+      99.894,
+      99.917,
+      99.938,
+      99.952,
+      99.963
+    ],
+    "top_3_pc_variance_pct": 93.72,
+    "top_5_pc_variance_pct": 98.61,
+    "top_10_pc_variance_pct": 99.85
+  },
+  "manual_rule_table_benchmarking": {
+    "pc1_forward_correlation_r": 0.9968,
+    "pc1_forward_r2": 0.9937,
+    "pc2_turn_correlation_r": 0.5737,
+    "pc2_turn_r2": 0.3291,
+    "pc3_arrest_correlation_r": -0.0132,
+    "pc3_arrest_r2": 0.0002,
+    "manual_subspace_variance_ratio_pct": 3.09,
+    "optimal_pca_subspace_variance_ratio_pct": 93.72,
+    "subspace_efficiency_pct": 3.29,
+    "residual_unmodeled_variance_pct": 96.91
+  },
+  "participation_ratios": {
+    "manual_forward_effective_neurons": 4.3,
+    "unbiased_forward_effective_neurons": 799.3,
+    "manual_turn_effective_neurons": 4.0,
+    "unbiased_turn_effective_neurons": 299.9
+  },
+  "unbiased_weights_summary": {
+    "forward_drive_top_10_weights": [
+      {
+        "dn_index": 15,
+        "weight": 0.063076
+      },
+      {
+        "dn_index": 622,
+        "weight": 0.062358
+      },
+      {
+        "dn_index": 967,
+        "weight": 0.060689
+      },
+      {
+        "dn_index": 819,
+        "weight": 0.060143
+      },
+      {
+        "dn_index": 115,
+        "weight": 0.059948
+      },
+      {
+        "dn_index": 182,
+        "weight": 0.059723
+      },
+      {
+        "dn_index": 389,
+        "weight": 0.058215
+      },
+      {
+        "dn_index": 1255,
+        "weight": 0.057816
+      },
+      {
+        "dn_index": 428,
+        "weight": 0.057786
+      },
+      {
+        "dn_index": 131,
+        "weight": 0.057692
+      }
+    ],
+    "turn_intent_top_10_weights": [
+      {
+        "dn_index": 980,
+        "weight": 0.076632
+      },
+      {
+        "dn_index": 1016,
+        "weight": -0.07319
+      },
+      {
+        "dn_index": 79,
+        "weight": -0.072531
+      },
+      {
+        "dn_index": 185,
+        "weight": -0.070348
+      },
+      {
+        "dn_index": 409,
+        "weight": -0.06804
+      },
+      {
+        "dn_index": 701,
+        "weight": -0.067944
+      },
+      {
+        "dn_index": 1175,
+        "weight": -0.067795
+      },
+      {
+        "dn_index": 1011,
+        "weight": -0.066819
+      },
+      {
+        "dn_index": 448,
+        "weight": -0.066799
+      },
+      {
+        "dn_index": 296,
+        "weight": -0.066738
+      }
+    ]
+  }
+}

@@ -1,0 +1,460 @@
+{
+  "retrieved": "2026-09-30T08:19:14-0700",
+  "compounds": {
+    "Caffeine": {
+      "caffeine": {
+        "status": "ok",
+        "cids": [
+          2519
+        ],
+        "primary_cid": 2519,
+        "properties": {
+          "title": "Caffeine",
+          "formula": "C8H10N4O2",
+          "mw": "194.19",
+          "smiles": null
+        }
+      }
+    },
+    "Pepto Bismol": {
+      "bismuth subsalicylate": {
+        "status": "ok",
+        "cids": [
+          53629521
+        ],
+        "primary_cid": 53629521,
+        "properties": {
+          "title": "Bismuth Subsalicylate",
+          "formula": "C7H5BiO4",
+          "mw": "362.09",
+          "smiles": null
+        }
+      }
+    },
+    "Claritin (Tablet)": {
+      "loratadine": {
+        "status": "ok",
+        "cids": [
+          3957
+        ],
+        "primary_cid": 3957,
+        "properties": {
+          "title": "Loratadine",
+          "formula": "C22H23ClN2O2",
+          "mw": "382.9",
+          "smiles": null
+        }
+      }
+    },
+    "Claritin (Gel)": {
+      "loratadine": {
+        "status": "ok",
+        "cids": [
+          3957
+        ],
+        "primary_cid": 3957,
+        "properties": {
+          "title": "Loratadine",
+          "formula": "C22H23ClN2O2",
+          "mw": "382.9",
+          "smiles": null
+        }
+      }
+    },
+    "Codeine": {
+      "codeine": {
+        "status": "ok",
+        "cids": [
+          5284371
+        ],
+        "primary_cid": 5284371,
+        "properties": {
+          "title": "Codeine",
+          "formula": "C18H21NO3",
+          "mw": "299.4",
+          "smiles": null
+        }
+      }
+    },
+    "Dormiphen (Sleeping Pill)": {
+      "diphenhydramine": {
+        "status": "ok",
+        "cids": [
+          3100
+        ],
+        "primary_cid": 3100,
+        "properties": {
+          "title": "Diphenhydramine",
+          "formula": "C17H21NO",
+          "mw": "255.35",
+          "smiles": null
+        }
+      }
+    },
+    "Acetaminophen": {
+      "acetaminophen": {
+        "status": "ok",
+        "cids": [
+          1983
+        ],
+        "primary_cid": 1983,
+        "properties": {
+          "title": "Acetaminophen",
+          "formula": "C8H9NO2",
+          "mw": "151.16",
+          "smiles": null
+        }
+      }
+    },
+    "Bupropion (Wellbutrin)": {
+      "bupropion": {
+        "status": "ok",
+        "cids": [
+          444
+        ],
+        "primary_cid": 444,
+        "properties": {
+          "title": "Bupropion",
+          "formula": "C13H18ClNO",
+          "mw": "239.74",
+          "smiles": null
+        }
+      }
+    },
+    "Tobacco": {
+      "nicotine": {
+        "status": "ok",
+        "cids": [
+          89594
+        ],
+        "primary_cid": 89594,
+        "properties": {
+          "title": "Nicotine",
+          "formula": "C10H14N2",
+          "mw": "162.23",
+          "smiles": null
+        }
+      }
+    },
+    "Tobacco Extract": {
+      "nicotine": {
+        "status": "ok",
+        "cids": [
+          89594
+        ],
+        "primary_cid": 89594,
+        "properties": {
+          "title": "Nicotine",
+          "formula": "C10H14N2",
+          "mw": "162.23",
+          "smiles": null
+        }
+      }
+    },
+    "Dimenhydrinate (Gravol)": {
+      "dimenhydrinate": {
+        "status": "ok",
+        "cids": [
+          10660
+        ],
+        "primary_cid": 10660,
+        "properties": {
+          "title": "Dimenhydrinate",
+          "formula": "C24H28ClN5O3",
+          "mw": "470.0",
+          "smiles": null
+        }
+      },
+      "diphenhydramine": {
+        "status": "ok",
+        "cids": [
+          3100
+        ],
+        "primary_cid": 3100,
+        "properties": {
+          "title": "Diphenhydramine",
+          "formula": "C17H21NO",
+          "mw": "255.35",
+          "smiles": null
+        }
+      },
+      "8-chlorotheophylline": {
+        "status": "ok",
+        "cids": [
+          10661
+        ],
+        "primary_cid": 10661,
+        "properties": {
+          "title": "8-Chlorotheophylline",
+          "formula": "C7H7ClN4O2",
+          "mw": "214.61",
+          "smiles": null
+        }
+      }
+    },
+    "Fexofenadine (Allegra)": {
+      "fexofenadine": {
+        "status": "ok",
+        "cids": [
+          3348
+        ],
+        "primary_cid": 3348,
+        "properties": {
+          "title": "Fexofenadine",
+          "formula": "C32H39NO4",
+          "mw": "501.7",
+          "smiles": null
+        }
+      }
+    },
+    "Lidocaine": {
+      "lidocaine": {
+        "status": "ok",
+        "cids": [
+          3676
+        ],
+        "primary_cid": 3676,
+        "properties": {
+          "title": "Lidocaine",
+          "formula": "C14H22N2O",
+          "mw": "234.34",
+          "smiles": null
+        }
+      }
+    },
+    "Lithium Acetate": {
+      "lithium acetate": {
+        "status": "ok",
+        "cids": [
+          3474584
+        ],
+        "primary_cid": 3474584,
+        "properties": {
+          "title": "Lithium acetate",
+          "formula": "C2H3LiO2",
+          "mw": "66.0",
+          "smiles": null
+        }
+      },
+      "lithium": {
+        "status": "ok",
+        "cids": [
+          3028194
+        ],
+        "primary_cid": 3028194,
+        "properties": {
+          "title": "Lithium",
+          "formula": "Li",
+          "mw": "7.0",
+          "smiles": null
+        }
+      }
+    },
+    "Melatonin": {
+      "melatonin": {
+        "status": "ok",
+        "cids": [
+          896
+        ],
+        "primary_cid": 896,
+        "properties": {
+          "title": "Melatonin",
+          "formula": "C13H16N2O2",
+          "mw": "232.28",
+          "smiles": null
+        }
+      }
+    },
+    "Mirtazapine": {
+      "mirtazapine": {
+        "status": "ok",
+        "cids": [
+          4205
+        ],
+        "primary_cid": 4205,
+        "properties": {
+          "title": "Mirtazapine",
+          "formula": "C17H19N3",
+          "mw": "265.35",
+          "smiles": null
+        }
+      }
+    },
+    "Famotidine (Pepcid)": {
+      "famotidine": {
+        "status": "ok",
+        "cids": [
+          5702160
+        ],
+        "primary_cid": 5702160,
+        "properties": {
+          "title": "Famotidine",
+          "formula": "C8H15N7O2S3",
+          "mw": "337.5",
+          "smiles": null
+        }
+      }
+    },
+    "Pregabalin (Lyrica)": {
+      "pregabalin": {
+        "status": "ok",
+        "cids": [
+          5486971
+        ],
+        "primary_cid": 5486971,
+        "properties": {
+          "title": "Pregabalin",
+          "formula": "C8H17NO2",
+          "mw": "159.23",
+          "smiles": null
+        }
+      }
+    },
+    "Weed": {
+      "delta-9-tetrahydrocannabinol": {
+        "status": "ok",
+        "cids": [
+          16078
+        ],
+        "primary_cid": 16078,
+        "properties": {
+          "title": "Tetrahydrocannabinol",
+          "formula": "C21H30O2",
+          "mw": "314.5",
+          "smiles": null
+        }
+      },
+      "cannabidiol": {
+        "status": "ok",
+        "cids": [
+          644019
+        ],
+        "primary_cid": 644019,
+        "properties": {
+          "title": "Cannabidiol",
+          "formula": "C21H30O2",
+          "mw": "314.5",
+          "smiles": null
+        }
+      }
+    },
+    "THCa nanodrops": {
+      "tetrahydrocannabinolic acid": {
+        "status": "ok",
+        "cids": [
+          3082459
+        ],
+        "primary_cid": 3082459,
+        "properties": {
+          "title": "Tetrahydrocannabinolic acid",
+          "formula": "C22H30O4",
+          "mw": "358.5",
+          "smiles": null
+        }
+      }
+    },
+    "CBD nanodrops": {
+      "cannabidiol": {
+        "status": "ok",
+        "cids": [
+          644019
+        ],
+        "primary_cid": 644019,
+        "properties": {
+          "title": "Cannabidiol",
+          "formula": "C21H30O2",
+          "mw": "314.5",
+          "smiles": null
+        }
+      }
+    },
+    "Vyvanse": {
+      "lisdexamfetamine": {
+        "status": "ok",
+        "cids": [
+          11597698
+        ],
+        "primary_cid": 11597698,
+        "properties": {
+          "title": "Lisdexamfetamine",
+          "formula": "C15H25N3O",
+          "mw": "263.38",
+          "smiles": null
+        }
+      }
+    },
+    "Robax": {
+      "ibuprofen": {
+        "status": "ok",
+        "cids": [
+          3672
+        ],
+        "primary_cid": 3672,
+        "properties": {
+          "title": "Ibuprofen, (+-)-",
+          "formula": "C13H18O2",
+          "mw": "206.28",
+          "smiles": null
+        }
+      },
+      "methocarbamol": {
+        "status": "ok",
+        "cids": [
+          4107
+        ],
+        "primary_cid": 4107,
+        "properties": {
+          "title": "Methocarbamol",
+          "formula": "C11H15NO5",
+          "mw": "241.24",
+          "smiles": null
+        }
+      }
+    },
+    "Naproxen": {
+      "naproxen": {
+        "status": "ok",
+        "cids": [
+          156391
+        ],
+        "primary_cid": 156391,
+        "properties": {
+          "title": "Naproxen",
+          "formula": "C14H14O3",
+          "mw": "230.26",
+          "smiles": null
+        }
+      }
+    },
+    "Mometasone (Nasonex)": {
+      "mometasone furoate": {
+        "status": "ok",
+        "cids": [
+          441336
+        ],
+        "primary_cid": 441336,
+        "properties": {
+          "title": "Mometasone Furoate",
+          "formula": "C27H30Cl2O6",
+          "mw": "521.4",
+          "smiles": null
+        }
+      }
+    },
+    "Ibuprofen": {
+      "ibuprofen": {
+        "status": "ok",
+        "cids": [
+          3672
+        ],
+        "primary_cid": 3672,
+        "properties": {
+          "title": "Ibuprofen, (+-)-",
+          "formula": "C13H18O2",
+          "mw": "206.28",
+          "smiles": null
+        }
+      }
+    }
+  }
+}

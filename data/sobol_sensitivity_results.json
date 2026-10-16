@@ -1,0 +1,179 @@
+{
+  "metadata": {
+    "method": "Saltelli (2002, 2010) Sobol Variance Decomposition",
+    "sample_size_N": 32,
+    "n_parameters": 7,
+    "total_evaluations": 288,
+    "runtime_seconds": 13.0,
+    "parameters": {
+      "k_dn": {
+        "min": 0.4,
+        "max": 1.2
+      },
+      "k_dna": {
+        "min": 0.3,
+        "max": 1.2
+      },
+      "harness_support": {
+        "min": 0.2,
+        "max": 1.0
+      },
+      "stiff_rot": {
+        "min": 500.0,
+        "max": 3500.0
+      },
+      "w0_cpg": {
+        "min": 5.0,
+        "max": 30.0
+      },
+      "base_cadence": {
+        "min": 0.8,
+        "max": 1.5
+      },
+      "slew_max": {
+        "min": 10.0,
+        "max": 35.0
+      }
+    }
+  },
+  "sobol_indices": {
+    "vx_m_s": {
+      "output_variance": 0.023551,
+      "output_mean": 0.4769,
+      "first_order_Si": {
+        "k_dn": 1.0,
+        "k_dna": 0.0,
+        "harness_support": 0.0,
+        "stiff_rot": 0.0,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0338,
+        "slew_max": 0.0082
+      },
+      "total_order_STi": {
+        "k_dn": 1.0,
+        "k_dna": 0.0,
+        "harness_support": 0.035,
+        "stiff_rot": 0.0074,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0338,
+        "slew_max": 0.0082
+      },
+      "dominant_driver": "k_dn"
+    },
+    "trunk_pitch_abs": {
+      "output_variance": 21.919601,
+      "output_mean": 7.7766,
+      "first_order_Si": {
+        "k_dn": 0.0315,
+        "k_dna": 0.0,
+        "harness_support": 0.127,
+        "stiff_rot": 0.3252,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0,
+        "slew_max": 0.0
+      },
+      "total_order_STi": {
+        "k_dn": 0.0315,
+        "k_dna": 0.0,
+        "harness_support": 0.3637,
+        "stiff_rot": 0.5042,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0125,
+        "slew_max": 0.0
+      },
+      "dominant_driver": "stiff_rot"
+    },
+    "com_height": {
+      "output_variance": 0.00125,
+      "output_mean": 0.8945,
+      "first_order_Si": {
+        "k_dn": 0.0,
+        "k_dna": 0.0,
+        "harness_support": 1.0,
+        "stiff_rot": 0.0098,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.4027,
+        "slew_max": 0.0
+      },
+      "total_order_STi": {
+        "k_dn": 0.1174,
+        "k_dna": 0.0,
+        "harness_support": 1.0,
+        "stiff_rot": 0.0647,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.4027,
+        "slew_max": 0.0001
+      },
+      "dominant_driver": "harness_support"
+    },
+    "step_symmetry": {
+      "output_variance": 0.006782,
+      "output_mean": 0.9093,
+      "first_order_Si": {
+        "k_dn": 0.0,
+        "k_dna": 0.0,
+        "harness_support": 0.6569,
+        "stiff_rot": 0.0,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0,
+        "slew_max": 0.0
+      },
+      "total_order_STi": {
+        "k_dn": 0.0835,
+        "k_dna": 0.0,
+        "harness_support": 1.1439,
+        "stiff_rot": 0.2309,
+        "w0_cpg": 0.0,
+        "base_cadence": 1.1273,
+        "slew_max": 0.0049
+      },
+      "dominant_driver": "harness_support"
+    },
+    "sync_error": {
+      "output_variance": 0.0,
+      "output_mean": 0.0,
+      "first_order_Si": {
+        "k_dn": 0.0,
+        "k_dna": 0.0,
+        "harness_support": 0.0,
+        "stiff_rot": 0.0,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0,
+        "slew_max": 0.0
+      },
+      "total_order_STi": {
+        "k_dn": 0.0,
+        "k_dna": 0.0,
+        "harness_support": 0.0,
+        "stiff_rot": 0.0,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0,
+        "slew_max": 0.0
+      },
+      "dominant_driver": "w0_cpg"
+    },
+    "harness_load": {
+      "output_variance": 152.109149,
+      "output_mean": 2.6772,
+      "first_order_Si": {
+        "k_dn": 0.0,
+        "k_dna": 0.0,
+        "harness_support": 0.5146,
+        "stiff_rot": 0.0499,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0,
+        "slew_max": 0.0038
+      },
+      "total_order_STi": {
+        "k_dn": 0.0803,
+        "k_dna": 0.0,
+        "harness_support": 0.6818,
+        "stiff_rot": 0.0499,
+        "w0_cpg": 0.0,
+        "base_cadence": 0.0472,
+        "slew_max": 0.0038
+      },
+      "dominant_driver": "harness_support"
+    }
+  }
+}

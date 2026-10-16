@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# HighFly launcher: always run inside the project venv (the system python3 does
+# not have flygym). Viewer modes are executed under mjpython on macOS, which is
+# MuJoCo's requirement for GUI windows.
+# Resolve symlinks to determine real project directory
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+HERE="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+
+VENV_PY="$HERE/.venv3/bin/python"
+MJ_PY="$HERE/.venv3/bin/mjpython"
+
+if [ ! -x "$VENV_PY" ]; then
+    echo "error: $VENV_PY not found - create the venv first (see README.md)"
+    exit 1
+fi
+
+MODE="${1:-run}"
+
+# Viewer modes need mjpython on macOS (MuJoCo GUI requirement). Headless modes
+# (list/metrics/video) run on the plain venv python.
+case "$MODE" in
+    run|view|_view|human|timelapse|drive)
+        if [ -x "$MJ_PY" ]; then
+            exec "$MJ_PY" -u "$HERE/highfly_main.py" "$@"
+        fi
+        ;;
+esac
+
+exec "$VENV_PY" -u "$HERE/highfly_main.py" "$@"

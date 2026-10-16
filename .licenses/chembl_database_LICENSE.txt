@@ -1,0 +1,4 @@
+ChEMBL Database Access Terms:
+https://chembl.gitbook.io/chembl-interface-documentation/about
+Accessed on: 2026-10-14T21:42:00-07:00
+ChEMBL is an Open Data database licensed under Creative Commons Attribution-Share Alike 3.0 Unported License.

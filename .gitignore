@@ -1,0 +1,11 @@
+.venv3/
+__pycache__/
+*.pyc
+.DS_Store
+out/
+results/
+MUJOCO_LOG.TXT
+freebuff-chat-*.md
+Drosophila_on_Drugs.pdf
+EXECUTION_PLAN.md
+Slop/

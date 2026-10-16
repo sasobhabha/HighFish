@@ -1,0 +1,280 @@
+{
+  "metadata": {
+    "title": "Cross-Species Neuro-Pharmacological Homology & Binding Affinities",
+    "species_comparison": "Homo sapiens vs. Drosophila melanogaster",
+    "data_sources": [
+      "ChEMBL Database (EMBL-EBI, v34)",
+      "PubChem PUG REST (NCBI / NLM)",
+      "IUPHAR/BPS Guide to PHARMACOLOGY (2024)",
+      "FlyBase (FB2024_04)",
+      "FlyWire Connectome v783 (Princeton / Cambridge)"
+    ],
+    "curated_date": "2026-10-14"
+  },
+  "compounds": {
+    "Lidocaine": {
+      "pubchem_cid": 3616,
+      "chembl_id": "CHEMBL79",
+      "smiles": "CCN(CC)CC(=O)NC1=C(C=CC=C1C)C",
+      "mw": 234.34,
+      "primary_mechanism": "State-dependent, use-dependent pore blocker of voltage-gated sodium channels (Na_v)",
+      "human_targets": [
+        {
+          "gene": "SCN1A",
+          "protein": "Nav1.1",
+          "uniprot": "P35498",
+          "tissue_expression": "CNS inhibitory interneurons, cerebellar Purkinje cells, cortex",
+          "affinity_type": "IC50 (tonic / resting)",
+          "affinity_value_uM": 240.0,
+          "affinity_inactivated_uM": 12.0,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL2096682 (Brain sodium channel alpha subunits)"
+        },
+        {
+          "gene": "SCN2A",
+          "protein": "Nav1.2",
+          "uniprot": "Q99250",
+          "tissue_expression": "CNS unmyelinated axons, dendritic spines, cortical pyramidal neurons",
+          "affinity_type": "IC50 (tonic)",
+          "affinity_value_uM": 180.0,
+          "affinity_inactivated_uM": 8.5,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL2095171 (Brain sodium channel alpha subunits)"
+        },
+        {
+          "gene": "SCN9A",
+          "protein": "Nav1.7",
+          "uniprot": "Q15858",
+          "tissue_expression": "Peripheral nociceptive neurons (dorsal root ganglion), sympathetic neurons",
+          "affinity_type": "IC50",
+          "affinity_value_uM": 97.0,
+          "affinity_inactivated_uM": 4.2,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL612545"
+        },
+        {
+          "gene": "SCN5A",
+          "protein": "Nav1.5",
+          "uniprot": "Q14524",
+          "tissue_expression": "Cardiac ventricular myocytes (off-target cardiac conduction risk)",
+          "affinity_type": "IC50",
+          "affinity_value_uM": 108.0,
+          "affinity_inactivated_uM": 15.0,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL1980"
+        }
+      ],
+      "drosophila_ortholog": {
+        "gene": "para (paralytic)",
+        "flybase_id": "FBgn0285944",
+        "uniprot": "P35500",
+        "chromosomal_locus": "X:16,524,000..16,620,000",
+        "transcripts": "60+ alternative splice variants, extensive recursive splicing & A-to-I RNA editing",
+        "sequence_identity_overall_pct": 52.4,
+        "sequence_identity_tm_domains_pct": 78.6,
+        "binding_site_conservation": "Absolute conservation (>95%) of the local anesthetic binding locus in Domain IV, segment 6 (IV-S6). Key aromatic residues Phe1764 and Tyr1771 (human Nav1.2 numbering) align identically with Phe1815 and Tyr1822 in Drosophila para. The inner vestibule selectivity filter DEKA is 100% conserved.",
+        "affinity_para_uM": 150.0,
+        "functional_divergence": "Humans express 9 distinct Na_v alpha-subunit paralogs (SCN1A-SCN11A) with divergent tissue distribution, kinetics, and tetrodotoxin (TTX) sensitivity. Drosophila relies on a SINGLE pore-forming alpha gene (para), achieving functional diversification through elaborate alternative RNA splicing and ADAR-mediated RNA editing."
+      },
+      "citations": [
+        "Catterall, William A. 'Voltage-gated sodium channels at 60: structure, function and pathophysiology.' The Journal of Physiology 590.11 (2012): 2577-2589.",
+        "Loughney, Kevin, et al. 'Molecular analysis of the para locus, a sodium channel gene in Drosophila.' Cell 58.6 (1989): 1143-1154.",
+        "Warmke, Jeffrey W., et al. 'Functional expression of the Drosophila para sodium channel.' The Journal of General Physiology 110.2 (1997): 119-133."
+      ]
+    },
+    "Caffeine": {
+      "pubchem_cid": 2519,
+      "chembl_id": "CHEMBL113",
+      "smiles": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
+      "mw": 194.19,
+      "primary_mechanism": "Non-selective competitive antagonist of adenosine A1 and A2A receptors; weak PDE inhibitor",
+      "human_targets": [
+        {
+          "gene": "ADORA1",
+          "protein": "Adenosine A1 receptor",
+          "uniprot": "P30542",
+          "tissue_expression": "Widespread CNS; high in hippocampus, cerebral cortex, thalamus, cerebellum",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 26.0,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL318"
+        },
+        {
+          "gene": "ADORA2A",
+          "protein": "Adenosine A2A receptor",
+          "uniprot": "P29274",
+          "tissue_expression": "High in striatopallidal medium spiny neurons (indirect pathway), olfactory bulb",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 16.0,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL302"
+        },
+        {
+          "gene": "ADORA2B",
+          "protein": "Adenosine A2B receptor",
+          "uniprot": "P29275",
+          "tissue_expression": "Low throughout brain; peripheral vasculature, immune cells",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 45.0,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL2094117"
+        }
+      ],
+      "drosophila_ortholog": {
+        "gene": "dAdoR (adenosine receptor)",
+        "flybase_id": "FBgn0039747",
+        "uniprot": "Q9VZI2",
+        "sequence_identity_overall_pct": 28.5,
+        "sequence_identity_tm_domains_pct": 42.1,
+        "functional_divergence": "CRITICAL PHARMACOLOGICAL DIVERGENCE: In humans, caffeine promotes arousal primarily by blocking adenosine A1 and A2A receptors, disinhibiting striatopallidal circuits. However, behavioral genetic assays in Drosophila (Wu et al. 2009 Nature Neuroscience; Nall et al. 2016) demonstrated that caffeine-induced hyperactivity and sleep suppression occur INDEPENDENTLY of the single fly adenosine receptor (dAdoR null mutants respond identically to wild-type). In flies, caffeine acts through dopaminergic signaling via D1-like dopamine receptors (Dop1R1/dumb), ryanodine receptors, and phosphodiesterase (PDE) inhibition elevating cAMP/PKA.",
+        "fly_functional_proxy": "D1-like dopamine receptor (Dop1R1) + general excitability increase"
+      },
+      "citations": [
+        "Fredholm, Bertil B., et al. 'Actions of caffeine in the brain with special reference to factors that contribute to its widespread use.' Pharmacological Reviews 51.1 (1999): 83-133.",
+        "Wu, M. N., et al. 'A dopamine receptor functions in sleep regulation in Drosophila.' Nature Neuroscience 12.7 (2009): 905-910.",
+        "Nall, A. H., et al. 'Caffeine promotes wakefulness via dopamine signaling in Drosophila.' Journal of Neurogenetics 30.3-4 (2016): 228-237."
+      ]
+    },
+    "Nicotine": {
+      "pubchem_cid": 89594,
+      "chembl_id": "CHEMBL3",
+      "smiles": "CN1CCCC1C2=CN=CC=C2",
+      "mw": 162.23,
+      "primary_mechanism": "Agonist of neuronal nicotinic acetylcholine receptors (nAChR)",
+      "human_targets": [
+        {
+          "gene": "CHRNA4 / CHRNB2",
+          "protein": "Neuronal nAChR alpha4-beta2 heteropentamer",
+          "uniprot": "P43681 / P17787",
+          "tissue_expression": "Mesolimbic dopamine pathway (VTA), thalamocortical sensory circuits, basal forebrain",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 0.001,
+          "hill_coefficient": 1.2,
+          "chembl_assay": "CHEMBL1907596"
+        },
+        {
+          "gene": "CHRNA7",
+          "protein": "Neuronal nAChR alpha7 homopentamer",
+          "uniprot": "P36544",
+          "tissue_expression": "Hippocampus, cortex, presynaptic terminal modulation (glutamate release)",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 4.0,
+          "hill_coefficient": 1.5,
+          "chembl_assay": "CHEMBL4980"
+        },
+        {
+          "gene": "CHRNA3 / CHRNB4",
+          "protein": "Ganglionic nAChR alpha3-beta4",
+          "uniprot": "P32297 / P30926",
+          "tissue_expression": "Autonomic ganglia, medial habenula, interpeduncular nucleus",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 0.53,
+          "hill_coefficient": 1.1,
+          "chembl_assay": "CHEMBL1907593"
+        }
+      ],
+      "drosophila_ortholog": {
+        "gene": "nAChR alpha/beta family (10 subunits: Dalpha1-Dalpha7, Dbeta1-Dbeta3)",
+        "key_subunits": [
+          "Dalpha1 (ALS)",
+          "Dalpha2 (SAD)",
+          "Dalpha3",
+          "Dbeta1",
+          "Dbeta2"
+        ],
+        "sequence_identity_overall_pct": 46.2,
+        "sequence_identity_lbd_pct": 58.7,
+        "sequence_identity_pore_m2_pct": 74.0,
+        "functional_divergence": "Acetylcholine is the primary FAST EXCITATORY neurotransmitter in the insect central nervous system (analogous to glutamate in the vertebrate CNS). In Drosophila FlyWire connectome, >65% of central brain synapses are cholinergic. Nicotine acts as an extremely potent agonist across fly nAChRs; high doses induce continuous depolarization block and desensitization, collapsing central neurotransmission."
+      },
+      "citations": [
+        "Millar, Neil S., and Ian Denholm. 'Nicotinic acetylcholine receptors: targets for chemically diverse insecticides.' Invertebrate Neuroscience 7.1 (2007): 53-66.",
+        "Jones, A. K., and D. B. Sattelle. 'The cys-loop ligand-gated ion channel superfamily of the nematode Caenorhabditis elegans.' Invertebrate Neuroscience 8.1 (2008): 41-56."
+      ]
+    },
+    "GABA_Antagonists": {
+      "picrotoxin": {
+        "pubchem_cid": 10078,
+        "chembl_id": "CHEMBL1908342",
+        "smiles": "Equimolar mixture of picrotoxinin (C15H16O6) and picrotin (C15H18O7)",
+        "primary_mechanism": "Non-competitive channel pore blocker of GABA_A / Rdl ligand-gated chloride channels",
+        "human_target": "GABRA1-6 / GABRB1-3 / GABRG1-3 (CHEMBL1962, IC50 = 1.2 - 5.0 uM, pore blocker)",
+        "fly_target": "Rdl (Resistant to dieldrin, FBgn0004244, UniProt P25123, IC50 = 0.8 - 2.5 uM)",
+        "pore_sequence_identity_pct": 84.5,
+        "cross_species_conservation": "High: Picrotoxinin blocks the channel pore (2' to 6' residues of M2 helix) identically in flies and humans."
+      },
+      "bicuculline": {
+        "pubchem_cid": 10252,
+        "chembl_id": "CHEMBL515679",
+        "primary_mechanism": "Competitive orthosteric antagonist of GABA_A receptor",
+        "human_target": "GABRA1 / GABRG2 orthosteric GABA binding site (IC50 = 2.0 - 5.0 uM, Ki = 1.8 uM)",
+        "fly_target": "Rdl (BICUCULLINE-INSENSITIVE! IC50 > 150 uM)",
+        "functional_divergence": "CRITICAL HOMOLOGY BREAKDOWN: While Bicuculline is the classic competitive antagonist for human GABA_A receptors, insect homopentameric Rdl receptors are notoriously BICUCULLINE-INSENSITIVE (ffrench-Constant et al. 1993). Simulations cannot assume direct bicuculline efficacy on fly Rdl without adjusting for this 50-to-100-fold affinity shift."
+      },
+      "dieldrin": {
+        "pubchem_cid": 3078,
+        "chembl_id": "CHEMBL416246",
+        "primary_mechanism": "Cyclodiene non-competitive blocker of GABA-gated chloride channel pore",
+        "human_target": "GABRA1 channel pore (IC50 = 0.2 - 0.8 uM)",
+        "fly_target": "Rdl (IC50 = 0.02 - 0.05 uM; Ala302Ser mutation gives 1000x resistance)",
+        "cross_species_conservation": "Extreme: Rdl locus was originally identified and cloned based on cyclodiene/dieldrin resistance."
+      },
+      "citations": [
+        "ffrench-Constant, R. H., et al. 'Molecular analysis of the GABA receptor gene Rdl in Drosophila.' Journal of Neurogenetics 9.2 (1993): 101-114.",
+        "Hosie, Alistair M., et al. 'Actions of the insecticide fipronil on recombinant GABA receptors.' British Journal of Pharmacology 115.6 (1995): 909-912.",
+        "Olsen, Richard W. 'GABA A receptor: Positive and negative allosteric modulators.' Neuropharmacology 136 (2018): 10-22."
+      ]
+    },
+    "Methamphetamine": {
+      "pubchem_cid": 10836,
+      "chembl_id": "CHEMBL1201201",
+      "smiles": "CC(NC)CC1=CC=CC=C1",
+      "mw": 149.23,
+      "primary_mechanism": "Substrate and reverse-transport releaser at dopamine and monoamine transporters (DAT, NET, VMAT2)",
+      "human_targets": [
+        {
+          "gene": "SLC6A3",
+          "protein": "Dopamine Transporter 1 (DAT1)",
+          "uniprot": "Q01959",
+          "tissue_expression": "Substantia nigra pars compacta, ventral tegmental area (VTA)",
+          "affinity_type": "Ki / IC50 (uptake inhibition)",
+          "affinity_value_uM": 0.035,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL238"
+        },
+        {
+          "gene": "SLC6A2",
+          "protein": "Norepinephrine Transporter (NET)",
+          "uniprot": "P23975",
+          "tissue_expression": "Locus coeruleus, sympathetic postganglionic terminals",
+          "affinity_type": "Ki",
+          "affinity_value_uM": 0.048,
+          "hill_coefficient": 1.0,
+          "chembl_assay": "CHEMBL222"
+        },
+        {
+          "gene": "SLC18A2",
+          "protein": "Vesicular Monoamine Transporter 2 (VMAT2)",
+          "uniprot": "Q05940",
+          "tissue_expression": "Synaptic vesicles of monoaminergic neurons",
+          "affinity_type": "Ki (vesicular disruption)",
+          "affinity_value_uM": 2.8,
+          "hill_coefficient": 1.0
+        }
+      ],
+      "drosophila_ortholog": {
+        "gene": "dDAT (fumin / fmn locus)",
+        "flybase_id": "FBgn0034136",
+        "uniprot": "Q7K4Y6",
+        "sequence_identity_overall_pct": 51.2,
+        "sequence_identity_tm_bundle_pct": 73.5,
+        "functional_divergence": "Drosophila lacks norepinephrine, using octopamine as the insect equivalent of adrenergic neurotransmission. dDAT is the single principal reuptake transporter for dopamine. Mutants in dDAT (fumin) show massive sleep loss and continuous hyperlocomotion. Methamphetamine reverses dDAT transport, producing massive extracellular DA accumulation and hyperactivity."
+      },
+      "citations": [
+        "Kume, Kazuhiko, et al. 'Dopamine is a key regulator of arousal in the fruit fly.' The Journal of Neuroscience 25.32 (2005): 7377-7384.",
+        "Giros, Bruno, and Marc G. Caron. 'Molecular characterization of the dopamine transporter.' Trends in Pharmacological Sciences 14.2 (1993): 43-49.",
+        "Porzgen, Peter, et al. 'The Drosophila dopamine transporter: cloning and pharmacological characterization.' Molecular Brain Research 91.1-2 (2001): 25-35."
+      ]
+    }
+  }
+}

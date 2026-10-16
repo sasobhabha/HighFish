@@ -1,0 +1,352 @@
+# Pharmacology table: 27 user-listed products -> verified receptor mechanisms.
+#
+# POLICY:
+# - `cid` values were returned by PubChem PUG REST on 2026-09-30 (data/pubchem_cids.json).
+# - `human.targets` are justified by the citation keys listed (citations.md, MLA 9).
+# - `fly.mapping` entries name ONLY receptor systems verified to exist in Drosophila
+#   (citation keys included). Where we could NOT verify a fly ortholog or fly effect,
+#   `fly.effect` is `null` and the entry says so explicitly.
+# - Every entry lists `human_neuron_classes` (human neuroanatomy, cited) and
+#   `fly_neuron_classes` (FlyWire super_class / class terms from data/processed/).
+# - `sim_params` are MODELING CHOICES for the CPG/LIF layer (not measured pharmacology), following the PDF's Hill-occupancy formalism.
+
+schema_version: 1
+citations_file: citations.md
+
+receptor_systems:   # fly receptor systems used by the simulator
+  nachr:
+    name: nicotinic acetylcholine receptor (nAChR, Dalpha1-Dalpha7 / Dbeta subunits)
+    citations: [C8, C9, C10, C11, C12]
+    nt: ACH
+    effect_on_postsynaptic_drive: excitatory_blockable
+  rdl:
+    name: GABA-A-like ionotropic chloride channel (Rdl / resistant-to-dieldrin)
+    citations: [C121, C122, C123, C124, C127]
+    nt: GABA
+    effect_on_postsynaptic_drive: inhibitory_blockable
+  glut_iontropic:
+    name: ionotropic glutamate receptors (GluCl family / NMDAR)
+    citations: [C124]
+    nt: GLUT
+    effect_on_postsynaptic_drive: mixed_blockable
+  ort_histamine:
+    name: histamine-gated chloride channel (ort / hclA, hisCl1 / hclB)
+    citations: [C144, C145, C146]
+    nt: null          # histamine is not one of the 6 predicted NT classes in codex v783
+    effect_on_postsynaptic_drive: inhibitory_blockable
+  ddat:
+    name: dopamine transporter (DAT/fumin locus)
+    citations: [C132, C133, C134, C137, C173, C174, C175, C176, C177]
+    nt: DA
+    effect_on_postsynaptic_drive: reuptake_site
+  5ht_receptors:
+    name: serotonin receptors (5-HT1A, 5-HT1B, 5-HT2A, 5-HT2B, 5-HT7)
+    citations: [C138, C139, C140, C143]
+    nt: SER
+    effect_on_postsynaptic_drive: modulatory
+  para_nav:
+    name: voltage-gated sodium channel (para / paralytic)
+    citations: [C149, C150, C151, C152]
+    nt: null
+    effect_on_postsynaptic_drive: excitability
+  gaba_b:
+    name: metabotropic GABA-B receptor (GABA-B-R1/R2/R3)
+    citations: [C128, C129, C130, C131]
+    nt: GABA
+    effect_on_postsynaptic_drive: modulatory
+  d1_like:
+    name: D1-like dopamine receptors (Dop1R1, Dop1R2)
+    citations: [C132, C133, C134, C135]
+    nt: DA
+    effect_on_postsynaptic_drive: modulatory
+  d2_like:
+    name: D2-like dopamine receptor (Dop2R)
+    citations: [C132, C137]
+    nt: DA
+    effect_on_postsynaptic_drive: modulatory
+
+products:
+
+  Caffeine:
+    cid: 2519
+    human:
+      targets: [adenosine A1 antagonist, adenosine A2A antagonist, adenosine A2B antagonist, adenosine A3 antagonist]
+      neuron_classes: [striatopallidal MSNs (A2A), hippocampal/cortical neurons (A1), wake-promoting hypothalamic & brainstem circuits]
+      citations: [C1, C2, C3, C4, C5, C6]
+      note: nonselective adenosine receptor blocker; A1 blockade raises 5-HT/DA/NA turnover (C5).
+    fly:
+      targets: [dAdoR-independent]
+      effect: null
+      citations: [C7, C179, C180]
+      note: >-
+        Drosophila caffeine wakefulness is NOT mediated by the single fly adenosine
+        receptor (Wu 2009); Nall 2016 shows caffeine acts via dopamine signaling.
+        We therefore model caffeine on fly D1-like DA receptors + general excitability.
+      mapping:
+        d1_like: {direction: agonist_positive_modulation, citations: [C179]}
+        para_nav: {direction: excitability_increase, citations: [C180]}
+    sim_params: {d1_like_gain: +0.20}
+
+  Claritin (Tablet):
+    cid: 3957
+    human:
+      targets: [peripheral H1 inverse agonist (loratadine/desloratadine)]
+      neuron_classes: [peripheral sensory neurons; slight central H1 occupancy reported (C47)]
+      citations: [C44, C45, C46, C47, C48, C49]
+      note: second-generation; minimal CNS penetration (P-gp substrate).
+    fly:
+      targets: [ort_histamine]
+      effect: weak antagonist (H1 is Gq-coupled; fly Ort/HisCl1 are histamine-gated channels - NOT true orthologs)
+      citations: [C144, C145, C146, C46]
+      note: >
+        Disclosed approximation: fly histamine receptors are chloride channels, not
+        H1 GPCRs. Loratadine antihistaminic action is used as a WEAK blocker signal.
+      mapping:
+        ort_histamine: {direction: weak_antagonist, citations: [C46, C145]}
+    sim_params: {ort_histamine_phi: 0.10}
+
+  Claritin (Gel):
+    cid: 3957
+    human:
+      targets: [peripheral H1 inverse agonist (loratadine/desloratadine)]
+      neuron_classes: [peripheral sensory neurons; slight central H1 occupancy reported (C47)]
+      citations: [C44, C45, C46, C47, C48, C49]
+      note: same active molecule as tablet; different delivery vehicle, no neuronal difference.
+    fly:
+      targets: [ort_histamine]
+      effect: weak antagonist (approximation, see Tablet note)
+      citations: [C46, C145]
+      mapping:
+        ort_histamine: {direction: weak_antagonist, citations: [C46, C145]}
+    sim_params: {ort_histamine_phi: 0.10}
+
+  Dormiphen (Sleeping Pill):
+    cid: 3100
+    human:
+      targets: [H1 inverse agonist (diphenhydramine), antimuscarinic, anti-alpha-adrenergic]
+      neuron_classes: [tuberomammillary nucleus histaminergic neurons (H1), vestibular nuclei, cortical neurons]
+      citations: [C37, C38, C39, C40, C41, C42, C43]
+      note: first-generation; crosses BBB readily; sedation via central H1 blockade.
+    fly:
+      targets: [ort_histamine]
+      effect: antagonist-approximation (fly histamine receptors are chloride channels)
+      citations: [C41, C145]
+      mapping:
+        ort_histamine: {direction: antagonist, citations: [C41, C145]}
+    sim_params: {ort_histamine_phi: 0.45}
+
+  Acetaminophen:
+    cid: 1983
+    human:
+      targets: [COX-1 variant / COX-2 weak, AM404-mediated TRPV1 & CB1 (metabolite), descending serotonergic activation]
+      neuron_classes: [spinal cord dorsal horn, hypothalamus (thermoregulation), descending serotonergic (raphe)]
+      citations: [C103, C104, C105, C106, C107]
+    fly:
+      targets: [5ht_receptors]
+      effect: serotonergic modulation approximation
+      citations: [C105, C139]
+      note: >
+        Fly has no COX/AM404 system verified; the only cited, conserved pathway is the
+        descending serotonergic activation (C105). Modeled as weak 5-HT gain increase.
+      mapping:
+        5ht_receptors: {direction: weak_positive_modulation, citations: [C105]}
+    sim_params: {ser_gain: +0.06}
+
+  Bupropion (Wellbutrin):
+    cid: 444
+    human:
+      targets: [DAT inhibitor, NET inhibitor, nAChR noncompetitive antagonist]
+      neuron_classes: [VTA dopamine neurons, locus coeruleus, mesolimbic pathway]
+      citations: [C17, C18, C19, C20, C21, C22, C23]
+    fly:
+      targets: [ddat, nachr]
+      effect: "DAT blockade + nAChR antagonism (conserved: fly DAT = fumin locus; fly nAChRs = neonicotinoid targets)"
+      citations: [C18, C19, C10, C11]
+      mapping:
+        ddat: {direction: antagonist, citations: [C18]}
+        nachr: {direction: antagonist, citations: [C19, C10]}
+    sim_params: {ddat_phi: 0.35, nachr_phi: 0.20, da_gain: +0.12}
+
+  Tobacco:
+    cid: 89594
+    human:
+      targets: [nicotinic acetylcholine receptors (alpha4beta2, alpha7) agonist]
+      neuron_classes: [VTA dopamine neurons, habenula, autonomic ganglia]
+      citations: [C8, C10, C11, C12]
+      note: listed here because fly nAChRs are the best-characterized ortholog system (C8-C12).
+    fly:
+      targets: [nachr]
+      effect: agonist (desensitizing at sustained exposure)
+      citations: [C8, C9, C10, C11, C12]
+      mapping:
+        nachr: {direction: agonist_then_desensitization, citations: [C8, C9, C10]}
+    sim_params: {nachr_activation_gain: +0.30}
+
+  Tobacco Extract:
+    cid: 89594
+    human:
+      targets: [nicotinic acetylcholine receptors agonist (plus MAO-inhibiting and other minor alkaloids not modeled)]
+      neuron_classes: [VTA dopamine neurons, autonomic ganglia]
+      citations: [C8, C10, C11, C12]
+      note: same active molecule as Tobacco; extract-specific minor alkaloids not modeled (disclosed).
+    fly:
+      targets: [nachr]
+      effect: agonist (desensitizing at sustained exposure)
+      citations: [C8, C9, C10, C11, C12]
+      mapping:
+        nachr: {direction: agonist_then_desensitization, citations: [C8, C9, C10]}
+    sim_params: {nachr_activation_gain: +0.30}
+
+  Dimenhydrinate (Gravol):
+    cid: 10660
+    human:
+      targets: [H1 inverse agonist (diphenhydramine component), adenosine antagonist (8-chlorotheophylline component)]
+      neuron_classes: [vestibular nuclei, TMN histaminergic neurons, cortical adenosine-responsive circuits]
+      citations: [C50, C51, C52, C53, C3]
+    fly:
+      targets: [ort_histamine]
+      effect: antagonist-approximation on H1 axis; theophylline-component adenosine effect is dAdoR-independent (not mapped)
+      citations: [C50, C7]
+      mapping:
+        ort_histamine: {direction: antagonist, citations: [C50, C145]}
+    sim_params: {ort_histamine_phi: 0.40}
+
+  Lidocaine:
+    cid: 3676
+    human:
+      targets: [voltage-gated sodium channels (Nav1.7, Nav1.8 etc.) blocker]
+      neuron_classes: [peripheral nociceptors, all fast-spiking neurons near application site]
+      citations: [C30, C31, C32, C33, C34, C35, C36]
+    fly:
+      targets: [para_nav]
+      effect: blocker (Para is the fly Nav ortholog; use-dependent block)
+      citations: [C149, C150, C151]
+      mapping:
+        para_nav: {direction: blocker, citations: [C149, C150]}
+    sim_params: {para_nav_phi: 0.70}
+
+  Lithium Acetate:
+    cid: 3474584
+    human:
+      targets: [GSK-3 inhibition (direct, IC50 ~1 mM), IP3/IMPase effects]
+      neuron_classes: [cortical/limbic neurons (GSK-3 is intracellular signaling, not a synaptic receptor)]
+      citations: [C72, C73, C74, C75, C76]
+      note: intracellular signaling target; not a synaptic receptor - no direct occupancy on g_syn.
+    fly:
+      targets: [para_nav]
+      effect: >
+        Intracellular GSK-3 homolog (shaggy) exists in fly, but it is not a synaptic
+        receptor and cannot enter the CPG/LIF g_syn formalism. Only cited fly-level
+        neuronal phenotype: lithium-responsive seizure-like hyperexcitability
+        involves para (C152). Modeled as weak excitability modulation.
+      citations: [C152, C75]
+      mapping:
+        para_nav: {direction: weak_excitability_modulation, citations: [C152]}
+    sim_params: {para_nav_phi: 0.05}
+
+  Mirtazapine:
+    cid: 4205
+    human:
+      targets: [alpha2-adrenoceptor antagonist, 5-HT2 antagonist, 5-HT3 antagonist, H1 antagonist]
+      neuron_classes: [locus coeruleus NE neurons, raphe 5-HT neurons, TMN histaminergic neurons]
+      citations: [C66, C67, C68, C69, C70, C71]
+    fly:
+      targets: [5ht_receptors]
+      effect: >
+        5-HT2/5-HT3 antagonism maps to fly 5-HT2A/2B receptors (5-HT3 has no fly
+        ionotropic ortholog). The alpha2 and H1 axes have no verifiable fly
+        synaptic-receptor ortholog and are NOT modeled.
+      citations: [C67, C70, C139, C140]
+      mapping:
+        5ht_receptors: {direction: antagonist_5ht2_preferring, citations: [C67, C139, C140]}
+    sim_params: {ser_gain: -0.10}
+
+  Weed:
+    cid: 16078
+    human:
+      targets: [CB1 partial agonist (THC), CB2 (peripheral), TRPV1/CB1 via AM404-acetaminophen analog only if co-administered]
+      neuron_classes: [hippocampal GABAergic axon terminals (CB1), cortical glutamatergic terminals, basal ganglia]
+      citations: [C84, C85, C86, C87, C88, C89]
+    fly:
+      targets: []
+      effect: null
+      citations: [C153, C154, C155]
+      note: >
+        Cannabinoid receptors are ABSENT in insects (McPartland 2001); THC cannot
+        activate G-proteins in fly tissue. CBD affects fly locomotion via 5-HT1A
+        (Candib 2024). THC component: no-op. CBD component: weak 5-HT modulation.
+      mapping:
+        5ht_receptors: {direction: weak_negative_modulation, citations: [C91]}
+    sim_params: {ser_gain: -0.04}
+
+  CBD nanodrops:
+    cid: 644019
+    human:
+      targets: [CB1 negative allosteric modulator, TRPV1/TRPA1 agonist, 5-HT1A partial agonist]
+      neuron_classes: [cortical/limbic neurons, descending serotonergic circuits]
+      citations: [C84, C90, C91]
+    fly:
+      targets: [5ht_receptors]
+      effect: >
+        CBD changes fly locomotor behavior via 5-HT1A receptors (Candib 2024);
+        5-HT1A is a verified fly receptor (C139, C140).
+      citations: [C91, C139, C140]
+      mapping:
+        5ht_receptors: {direction: partial_agonist_5ht1a, citations: [C91, C139]}
+    sim_params: {ser_gain: -0.06}
+
+  Vyvanse:
+    cid: 11597698
+    human:
+      targets: [DAT substrate (reverse transport), NET substrate, VMAT2 substrate]
+      neuron_classes: [VTA/nigrostriatal dopamine neurons, locus coeruleus NE neurons, cortical glutamatergic]
+      citations: [C24, C25, C26, C27, C28, C29]
+    fly:
+      targets: [ddat]
+      effect: DAT substrate/reverse-transport approximation (fly DAT = fumin locus; DA clearance loss -> hyperarousal)
+      citations: [C173, C174, C175, C132, C134]
+      mapping:
+        ddat: {direction: substrate_reverse_transport, citations: [C173, C174, C175]}
+    sim_params: {ddat_phi: 0.65, da_gain: +0.35}
+
+  Robax:
+    cid: 3672
+    human:
+      targets: [COX-1/COX-2 inhibitor (ibuprofen), CNS depressant + Nav1.4 blocker (methocarbamol)]
+      neuron_classes: [spinal cord interneurons, skeletal muscle Nav1.4, cortical (general depressant)]
+      citations: [C108, C113, C114, C115, C116, C117]
+    fly:
+      targets: [para_nav]
+      effect: methocarbamol Nav block maps to fly para channel (conserved); ibuprofen COX has no fly neuronal ortholog
+      citations: [C116, C149, C150]
+      mapping:
+        para_nav: {direction: blocker, citations: [C116, C150]}
+    sim_params: {para_nav_phi: 0.25}
+
+  Jungle Juice (Everything mixed):
+    cid: null
+    human:
+      targets: [all of the above combined]
+      neuron_classes: [combination]
+      citations: [C1, C13, C17, C24, C30, C37, C44, C50, C54, C60, C66, C72, C77, C84, C92, C98, C103, C108, C114, C118]
+      note: multi-drug co-application; interactions are additive in this model (disclosed simplification).
+    fly:
+      targets: [nachr, rdl, ort_histamine, ddat, para_nav, 5ht_receptors, d1_like]
+      effect: combined non-null mappings of all products above (additive occupancy)
+      citations: [C8, C41, C18, C173, C91, C152]
+      mapping:
+        nachr: {direction: agonist_then_desensitization, citations: [C8]}
+        ort_histamine: {direction: antagonist, citations: [C41]}
+        ddat: {direction: substrate_reverse_transport, citations: [C173, C174, C175]}
+        para_nav: {direction: blocker, citations: [C149]}
+        5ht_receptors: {direction: mixed, citations: [C91, C67]}
+        d1_like: {direction: agonist_positive_modulation, citations: [C179]}
+    sim_params:
+      nachr_activation_gain: +0.30
+      ort_histamine_phi: 0.45
+      ddat_phi: 0.65
+      para_nav_phi: 0.70
+      ser_gain: -0.08
+      d1_like_gain: +0.20
+
+

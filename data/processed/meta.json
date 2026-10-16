@@ -1,0 +1,46 @@
+{
+  "generated": "2026-09-30T08:26:19-0700",
+  "source": "FlyWire Codex bulk data, snapshot 783 (Oct 2023)",
+  "source_url": "https://codex.flywire.ai/api/download?dataset=fafb",
+  "storage_template": "https://storage.googleapis.com/flywire-data/codex/data/fafb/783/",
+  "n_neurons": 139255,
+  "n_edges_total_synapses": 34153568,
+  "n_edges": 2700513,
+  "edge_nt_distribution": {
+    "GABA": 865318,
+    "ACH": 2258155,
+    "GLUT": 654183,
+    "DA": 37705,
+    "SER": 37450,
+    "OCT": 17067
+  },
+  "classification_rows": 139255,
+  "cell_type_rows": 138327,
+  "missing_edge_endpoints": 0,
+  "super_class_counts": {
+    "optic": 77873,
+    "central": 32381,
+    "sensory": 16938,
+    "visual_projection": 7684,
+    "ascending": 1750,
+    "descending": 1305,
+    "sensory_ascending": 612,
+    "visual_centrifugal": 522,
+    "motor": 110,
+    "endocrine": 80
+  },
+  "nt_type_counts": {
+    "ACH": 82298,
+    "": 19658,
+    "GLUT": 19605,
+    "GABA": 16017,
+    "SER": 1021,
+    "DA": 584,
+    "OCT": 72
+  },
+  "cite": [
+    "Matsliah et al. 2024 Nature 632, https://www.nature.com/articles/s41586-024-07981-1",
+    "Dorkenwald et al. 2023/2024 FlyWire whole-brain connectome",
+    "codex.flywire.ai (Princeton Neuroscience Institute)"
+  ]
+}
