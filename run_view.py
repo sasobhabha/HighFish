@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Watch the drug-perturbed virtual fly walk LIVE in a MuJoCo window.
+"""Watch the drug-perturbed humanoid biped walk LIVE in a MuJoCo window.
 
-The body is NeuroMechFly v2 (micro-CT fly morphology); its leg motion is
-driven by the FlyWire v783 connectome simulation through the CPG motor
-bridge (see EXECUTION_PLAN.md for the pipeline and citations.md for sources).
+The biped's motor intent is driven by the zebrafish Fish1 connectome
+(Petkova et al. 2025) rate-network simulation through the hindbrain
+readout -> HumanIntent -> CPG pipeline (see EXECUTION_PLAN.md for the
+pipeline and citations.md for sources).
 
 Usage:
     .venv3/bin/python run_view.py                          # baseline (no drug)
@@ -21,7 +22,7 @@ import time
 import mujoco
 import mujoco.viewer
 
-from sim.body_sim import DrugBodySim
+from sim.human_pipeline import HumanPipelineSim
 from sim.drug_engine import list_products
 
 
@@ -33,6 +34,7 @@ def main():
     ap.add_argument("--dose", type=float, default=1.0, help="0..1")
     ap.add_argument("--duration", type=float, default=12.0,
                     help="seconds of simulated time to watch")
+    ap.add_argument("--no-harness", action="store_true")
     args = ap.parse_args()
 
     if args.drug is not None and args.drug not in list_products():
@@ -40,11 +42,12 @@ def main():
                          + "\n".join(f"  - {p}" for p in list_products()))
 
     print(f"building simulation (drug={args.drug!r}, dose={args.dose})...")
-    s = DrugBodySim(drug_name=args.drug, dose=args.dose)
-    print("neural net: FlyWire v783 |", s.neural.n, "neurons |",
-          len(s.dn), "descending neurons")
+    s = HumanPipelineSim(drug_name=args.drug, dose=args.dose,
+                         harness=not args.no_harness)
+    print("neural net: Fish1 zebrafish connectome |", s.neural.n, "neurons |",
+          len(s.neural.readout_idx), "hindbrain readout neurons")
     print("opening viewer window...")
-    m, d = s.sim.mj_model, s.sim.mj_data
+    m, d = s.body.mj_model, s.body.mj_data
 
     metrics = None
     t0 = time.time()
@@ -55,8 +58,9 @@ def main():
             except (KeyboardInterrupt, Exception) as e:
                 print(f"\nrun interrupted ({type(e).__name__}); finishing anyway")
     finally:
+        s.close()
         print(f"wall time: {time.time() - t0:.1f}s")
-    print(json.dumps(metrics, indent=2))
+    print(json.dumps(metrics, indent=2)[:1200])
 
 
 if __name__ == "__main__":

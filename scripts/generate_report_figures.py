@@ -101,7 +101,17 @@ def generate_figure_1():
 
 
 def generate_figure_2():
-    """Figure 2: Clinical Driving Impairment Matrix (SDLP vs Brake Reaction Time)."""
+    """Figure 2 (retired): Clinical Driving Impairment Matrix.
+
+    The 3D driving assay (SDLP / brake-reaction-time) was part of the legacy
+    Drosophila-prototype pipeline and is not part of the zebrafish Fish1 gait study; the
+    report JSON no longer carries `driving_impairment`. Retained for provenance
+    only and skipped in the active figure set.
+    """
+    if not any("driving_impairment" in c for c in conditions):
+        print("Skipping Figure 2: driving assay retired in the Fish1 gait study "
+              "(no `driving_impairment` data in the report).")
+        return
     fig, ax = plt.subplots(figsize=(10, 6.5))
 
     sdlps = [c["driving_impairment"]["sdlp_m"] for c in conditions]
@@ -195,15 +205,15 @@ def generate_figure_3():
     b2 = patches.FancyBboxPatch((3.8, 4.5), 2.5, 2.0, boxstyle="round,pad=0.2", facecolor="#f5f3ff", edgecolor="#8b5cf6", linewidth=2)
     ax.add_patch(b2)
     ax.text(5.05, 6.1, "TIER 2", ha="center", fontsize=10, fontweight="bold", color="#6d28d9")
-    ax.text(5.05, 5.7, "Drosophila Connectome", ha="center", fontsize=11, fontweight="bold", color="#4c1d95")
-    ax.text(5.05, 5.0, "FlyWire Codex v783\n139,255 Neurons | 1,305 DNs\nSparse LIF Rate Dynamics\n(PDF Eq. 5-7)", ha="center", fontsize=8.5, color="#334155")
+    ax.text(5.05, 5.7, "Zebrafish Connectome (Fish1)", ha="center", fontsize=11, fontweight="bold", color="#4c1d95")
+    ax.text(5.05, 5.0, "Petkova 2025 agglo v2a\n876,835 Neurons | 187 Hindbrain Readout\nE/I-Resolved Rate Dynamics\n(PDF Eq. 5-7)", ha="center", fontsize=8.5, color="#334155")
 
     # Tier 3 Box: Translation & Biped CPG
     b3 = patches.FancyBboxPatch((7.0, 4.5), 2.5, 2.0, boxstyle="round,pad=0.2", facecolor="#ecfdf5", edgecolor="#10b981", linewidth=2)
     ax.add_patch(b3)
     ax.text(8.25, 6.1, "TIER 3", ha="center", fontsize=10, fontweight="bold", color="#047857")
     ax.text(8.25, 5.7, "Human Intent & CPG", ha="center", fontsize=11, fontweight="bold", color="#064e3b")
-    ax.text(8.25, 5.0, "DN Population Decoding\nMatsuoka Anti-Phase CPG\nHumanIntent Vectors\n(PDF Eq. 8-11)", ha="center", fontsize=8.5, color="#334155")
+    ax.text(8.25, 5.0, "Hindbrain Population Decoding\nMatsuoka Anti-Phase CPG\nHumanIntent Vectors\n(PDF Eq. 8-11)", ha="center", fontsize=8.5, color="#334155")
 
     # Tier 4 Box: Embodied Behavioral Assays
     b4 = patches.FancyBboxPatch((2.0, 0.8), 6.0, 2.3, boxstyle="round,pad=0.2", facecolor="#fffbeb", edgecolor="#f59e0b", linewidth=2)

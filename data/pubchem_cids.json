@@ -1,5 +1,5 @@
 {
-  "retrieved": "2026-09-30T08:19:14-0700",
+  "retrieved": "2026-10-23T23:02:57-0700",
   "compounds": {
     "Caffeine": {
       "caffeine": {
@@ -452,6 +452,186 @@
           "title": "Ibuprofen, (+-)-",
           "formula": "C13H18O2",
           "mw": "206.28",
+          "smiles": null
+        }
+      }
+    },
+    "Pentylenetetrazol (PTZ)": {
+      "pentylenetetrazol": {
+        "status": "ok",
+        "cids": [
+          5917
+        ],
+        "primary_cid": 5917,
+        "properties": {
+          "title": "Pentylenetetrazole",
+          "formula": "C6H10N4",
+          "mw": "138.17",
+          "smiles": null
+        }
+      }
+    },
+    "Picrotoxin": {
+      "picrotoxin": {
+        "status": "ok",
+        "cids": [
+          31304
+        ],
+        "primary_cid": 31304,
+        "properties": {
+          "title": "Picrotoxin",
+          "formula": "C30H34O13",
+          "mw": "602.6",
+          "smiles": null
+        }
+      }
+    },
+    "Strychnine": {
+      "strychnine": {
+        "status": "ok",
+        "cids": [
+          441071
+        ],
+        "primary_cid": 441071,
+        "properties": {
+          "title": "Strychnine",
+          "formula": "C21H22N2O2",
+          "mw": "334.4",
+          "smiles": null
+        }
+      }
+    },
+    "Diazepam": {
+      "diazepam": {
+        "status": "ok",
+        "cids": [
+          3016
+        ],
+        "primary_cid": 3016,
+        "properties": {
+          "title": "Diazepam",
+          "formula": "C16H13ClN2O",
+          "mw": "284.74",
+          "smiles": null
+        }
+      }
+    },
+    "Ethanol (Alcohol)": {
+      "ethanol": {
+        "status": "ok",
+        "cids": [
+          702
+        ],
+        "primary_cid": 702,
+        "properties": {
+          "title": "Ethanol",
+          "formula": "C2H6O",
+          "mw": "46.07",
+          "smiles": null
+        }
+      }
+    },
+    "Ketamine": {
+      "ketamine": {
+        "status": "ok",
+        "cids": [
+          3821
+        ],
+        "primary_cid": 3821,
+        "properties": {
+          "title": "Ketamine",
+          "formula": "C13H16ClNO",
+          "mw": "237.72",
+          "smiles": null
+        }
+      }
+    },
+    "Cocaine": {
+      "cocaine": {
+        "status": "ok",
+        "cids": [
+          446220
+        ],
+        "primary_cid": 446220,
+        "properties": {
+          "title": "Cocaine",
+          "formula": "C17H21NO4",
+          "mw": "303.35",
+          "smiles": null
+        }
+      }
+    },
+    "Methylphenidate (Ritalin)": {
+      "methylphenidate": {
+        "status": "ok",
+        "cids": [
+          4158
+        ],
+        "primary_cid": 4158,
+        "properties": {
+          "title": "Methylphenidate",
+          "formula": "C14H19NO2",
+          "mw": "233.31",
+          "smiles": null
+        }
+      }
+    },
+    "Fluoxetine (Prozac)": {
+      "fluoxetine": {
+        "status": "ok",
+        "cids": [
+          3386
+        ],
+        "primary_cid": 3386,
+        "properties": {
+          "title": "Fluoxetine",
+          "formula": "C17H18F3NO",
+          "mw": "309.33",
+          "smiles": null
+        }
+      }
+    },
+    "Haloperidol": {
+      "haloperidol": {
+        "status": "ok",
+        "cids": [
+          3559
+        ],
+        "primary_cid": 3559,
+        "properties": {
+          "title": "Haloperidol",
+          "formula": "C21H23ClFNO2",
+          "mw": "375.9",
+          "smiles": null
+        }
+      }
+    },
+    "Donepezil (Aricept)": {
+      "donepezil": {
+        "status": "ok",
+        "cids": [
+          3152
+        ],
+        "primary_cid": 3152,
+        "properties": {
+          "title": "Donepezil",
+          "formula": "C24H29NO3",
+          "mw": "379.5",
+          "smiles": null
+        }
+      }
+    },
+    "Tetrodotoxin": {
+      "tetrodotoxin": {
+        "status": "ok",
+        "cids": [
+          11174599
+        ],
+        "primary_cid": 11174599,
+        "properties": {
+          "title": "Tetrodotoxin",
+          "formula": "C11H17N3O8",
+          "mw": "319.27",
           "smiles": null
         }
       }

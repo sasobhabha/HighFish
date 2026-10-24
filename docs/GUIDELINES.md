@@ -1,78 +1,81 @@
-# Project Guidelines (from `Drosophila_on_Drugs.pdf`)
+# Project Guidelines — Zebrafish Connectome → Humanoid Gait Under Pharmacology
 
-Source: *In Silico Modeling of Drosophila Locomotion Under Pharmacological Receptor Blockade:
-A Connectome-Constrained Biomechanical Study* (Research Project Plan, September 2026).
-This file restates the PDF's specification so the implementation follows it exactly.
+Modeling specification for the current implementation (zebrafish Fish1 substrate +
+anthropomorphic biped output). This file restates the equations and conventions actually
+implemented in `sim/`, so the manuscript (`scripts/build_template_docx.py`) and the code agree.
 
 ## 1. Framework
+
 Fully integrated **in silico** neuro-biomechanical pipeline:
 
 ```
-Connectomic data layer (EM dense reconstruction, NT identity, synapse counts)
+Connectomic data layer (Fish1 EM reconstruction, E/I polarity, synapse counts)
         ↓
-Biophysical & pharmaco-kinetic layer (Hill occupancy Φ → synaptic conductance scaling g_syn → CPG / LIF dynamics)
+Biophysical & pharmaco-kinetic layer (Hill occupancy Φ → synaptic conductance scaling g_syn → rate-network dynamics)
         ↓
-Embodied biomechanical layer (NeuroMechFly v2 / FlyGym → MuJoCo physics: contact, adhesion, PD control)
+Embodied biomechanical layer (hindbrain readout → HumanIntent → MuJoCo physics: PD servos, BWS harness)
 ```
 
-Dataset: **FlyWire** (full adult fly brain, FAFB/FAA0038
-family) as the connectome, with agent-added receptor/cell-type annotations backed by the
-pharmacology sources. The PDF's MANC/MaleCNS VNC focus is respected by driving the leg CPGs
-with FlyWire descending neurons (DNa01, DNa02, MDN-class DNs) that feed the VNC.
+Dataset: **Fish1** (Petkova et al. 2025, bioRxiv doi:10.1101/2025.06.10.658982) — serial-section EM
+connectome of the larval zebrafish brain + anterior spinal cord. E/I polarity comes from the
+`_ei_bayes` layer (vglut2a → type 2 excitatory, gad1b → type 1 inhibitory), CLEM-verified at
+IoU > 0.99 (see `data/processed/meta.json`).
 
 ## 2. Hypotheses implemented as simulation conditions
-- **H1 — GABA_A / Rdl antagonism:** suppresses inter-leg reciprocal inhibition → non-linear
-  collapse of tripod synchrony at occupancy Φ > 0.45 (high-frequency uncoordinated flailing).
-- **H2 — nAChR antagonism:** suppresses excitatory drive to MNs/CPGs → monotonic linear decay
-  of peak joint torques, decreased stance height, bradykinesia, preserved phase-coupling matrix.
-- **H0 — null:** no significant deviation vs. wild-type baseline.
+- **H1 — cnr1 agonism / GABAergic collapse:** THC-like activity suppresses presynaptic GABA
+  release and degrades left-right reciprocal symmetry → non-linear collapse of bipedal
+  coordination (ataxic mode) below C_biped ≈ 0.55.
+- **H2 — Na_v blockade (Lidocaine, scn1lab/Nav1.1 axis):** use-dependent excitability cut →
+  monotonic collapse of motor tone, zero propulsion, knee buckling in the BWS harness.
+- **H0 — null:** vehicle control shows baseline steady locomotion with intact symmetry.
 
-## 3. Equations (implement verbatim)
-1. Hill–Langmuir occupancy (non-cooperative, n = 1.0):
+## 3. Equations (implement verbatim; PNG renders live in `results/equations/`)
+1. E/I rate network (`sim/neural_sim.py`):
+   `τ_r · dr_i/dt = −r_i + φ(Σ_E W_ij^E r_j − Σ_I W_ij^I r_j + I_i)`
+2. Transfer function & synaptic state: `φ(x) = (√(x²+1) − x)/2`, `ds/dt = −s/τ_s + r`
+3. Hill–Langmuir occupancy (non-cooperative, n = 1.0):
    `Φ = [D]^n / ([D]^n + Kd^n)`
-2. Antagonist conductance scaling: `g_syn(t) = (1 − Φ) · g_max · s(t)`
-3. Synaptic gating: `ds/dt = −s/τ_decay + Σ_k δ(t − t_k)`
-4. CPG phase dynamics (per leg i, baseline ν_i = 12 Hz):
-   `dθ_i/dt = 2πν_i + Σ_{j∈Adj(i)} w_ij(Φ) · sin(θ_j − θ_i − Δφ_ij)`
-   with antagonist attenuation `w_ij(Φ) = (1 − Φ_GABA) · w_ij^(0)` under GABAergic blockade.
-5. Muscle activation (τ_m = 10 ms first-order filter, sigmoid):
-   `τ_m · da_k/dt = −a_k + σ(Σ_j w_jk_eff(Φ) · r_j)`, `w_jk_eff = (1 − Φ_nAChR) · w_jk^(0)`
-6. Joint target & PD torque:
-   `θ_target,k = θ_rest,k + a_k · Δθ_max,k`;  `τ_k = Kp(θ_target − θ_actual) − Kd·dθ_actual/dt`
+4. Drug scaling: agonism `g_syn = g0(1 + Δg_max Φ)`; Na_v blockade `scale_Scn = Kd^n/(Kd^n + [D]^n)`
+5. Hindbrain readout (`sim/fish_readout.py`):
+   `R_RO = mean(r_i, i ∈ hindbrain pool)`; lateral asymmetry `A_lat = (R_R − R_L)/(R_R + R_L + ε)`
+6. Coordination index: `C_biped = (1 − |A_LR|) · (1.0 − 0.35 Φ_GABA)`
+7. Forward drive: `D_fwd = clip([0.65(0.70 R_RO_norm + 0.30) + 0.25 S_food + 0.35 S_loom] · scale_Scn · G_stim, 0, 1)`
+8. Motor tone: `T_motor = clip(scale_Scn·(0.30 + 0.70 min(1, R_RO_norm)), 0.05, 1.0)`
+9. Postural tone: `P_post = clip(scale_Scn · min(1, 0.5+0.5 G_stim) · min(1, |A_LR|+0.3), 0.2, 1.0)`
+10. Biped CPG (`sim/human_gait.py`):
+    `dφ_L/dt = 2πν + w_c C_biped sin(φ_R − φ_L − π) + η_L(t)` (mirror for φ_R)
+11. Cadence & stride: `ν = ν0 + Δν D_fwd`, `L = L0 √D_fwd`
+12. Joint targets & PD torque: `θ_k(t) = A_k(D_fwd)·f_k(φ(t)) + θ_k,0`; `τ_k = Kp(θ_t − θ_a) − Kd·θ̇_a`
+13. BWS harness: `F_BWS = m g α_support H_posture ẑ`
 
-## 4. Assay parameters (Table 1)
+## 4. Assay parameters
 | Parameter | Value |
 |---|---|
-| Physics engine | MuJoCo via FlyGym / NeuroMechFly v2 |
-| Integration dt | 1e-4 s (10 kHz) |
-| Trial duration | 3.0 s (30,000 steps) |
-| Logging | 100 Hz (every 100 steps) |
-| Arena | Flat rigid plane, μs = 1.0, μd = 0.8 |
-| Adhesion | Active tarsal adhesion, F_adh,max = 15 μN |
-| Seeds | 30 stochastic seeds per condition |
+| Physics engine | MuJoCo 3.9 (humanoid biped body, `sim/humanoid_body.py`) |
+| Neural rate network | Fish1 adjacency, τ_r = 20 ms, stepped at 50 Hz |
+| Physics integration dt | varies by body model (PHYSICS_DT in `sim/human_pipeline.py`) |
+| Harness | BWS overhead carriage; α_support = 1.0 (full support, knee buckling preserved) |
+| Seeds | fixed default seed 0 for determinism |
 
-Treatment conditions: vehicle control (Φ = 0); GABA_A blockade (picrotoxin-site);
-nAChR blockade (MLA/imidacloprid-site); dual co-titration, Φ ∈ {0.1…1.0}.
+Treatment conditions: vehicle control (Φ = 0); the 30 citation-mapped products in
+`data/pharmacology.yaml` (fish: systems → mapping); "Jungle Juice" = concurrent multi-receptor
+co-application.
 
-## 5. Phenotyping metrics (Eq. 9–13)
+## 5. Phenotyping metrics
 1. Forward velocity Vx = Δx_COM / ΔT
-2. Straightness Si = ‖Δp_COM‖ / ∫‖v_COM‖dt
-3. Tripod Coordination Index TCI = mean |mean C(Tripod1) − mean C(Tripod2)|,
-   Tripod1 = {L1,R2,L3}, Tripod2 = {R1,L2,R3}, Ck ∈ {0,1} ground contact
-4. Duty factor DFk = t_stance/(t_stance + t_swing)
-5. Normalized GRF = Σ Fz,tarsal / (m·g)
-6. Vertical COM displacement ΔZ_COM
+2. Straightness Si = ‖Δp_COM‖ / ∫‖v‖dt
+3. Step symmetry & biped coordination index (left/right swing-phase statistics)
+4. Cadence (Hz), stride length, COM height (P_post), harness load
+5. Reaction-time assays: looming escape latency vs. freeze (sim/stimuli.py)
 
 ## 6. Validation targets
-- Baseline: Vx 20–35 mm/s, TCI ≥ 0.80, Si ≥ 0.92 over 3 s.
-- Rest GRF ≈ m·g (vertical force sanity check).
-- Motor-neuron identity and NT predictions verified against anatomical standards.
-- Numerical stability at dt = 1e-4 even at saturation Φ = 1.0.
+- Vehicle baseline: Vx ≈ 0.99–1.2 m/s, C_biped ≥ 0.90, stable COM height.
+- Lidocaine: T_motor ≤ 0.5, forward drive collapse, fall/suspension in harness.
+- THC: C_biped < 0.55 → ataxic mode; CBD: preserved baseline gait.
+- Metabolic sanity: harness support ≈ mg at rest during quiet stance.
 
-## 7. Agent-added scope (user requests on top of the PDF)
-- 27 user-listed products → receptor mechanisms → fly receptor orthologs, all cited
-  (PubMed PMIDs, Nature/Science DOIs, PubChem CIDs, FlyBase IDs). No uncited claims.
-- Connectome pulled live from FlyWire (codex API): root IDs, synapses, cell classes,
-  NT predictions, hemilineage/cell-type annotations.
-- Viewer shows live connectome activity + the NeuroMechFly v2 body simultaneously.
+## 7. Agent-added scope (user requests on top of the original spec)
+- 17 products → human mechanisms → verified zebrafish orthologs, all cited
+  (PubMed PMIDs, Nature/Science DOIs, PubChem CIDs, citations.md C1–C101). No uncited claims.
+- Manuscript template (`scripts/build_template_docx.py`) auto-loaded from the batch test report.
 - "Jungle Juice" = all drug effects combined (multi-receptor co-application).

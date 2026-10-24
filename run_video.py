@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the drug-perturbed virtual fly to a video file (no GUI needed).
+"""Render the drug-perturbed humanoid biped to a video file (no GUI needed).
 
 Usage:
     .venv3/bin/python run_video.py --drug Caffeine --out out/caffeine.mp4
@@ -9,7 +9,7 @@ import argparse
 import json
 from pathlib import Path
 
-from sim.body_sim import DrugBodySim
+from sim.human_pipeline import HumanPipelineSim
 from sim.drug_engine import list_products
 
 
@@ -18,9 +18,10 @@ def main():
     ap.add_argument("--drug", default=None)
     ap.add_argument("--dose", type=float, default=1.0)
     ap.add_argument("--duration", type=float, default=3.0)
-    ap.add_argument("--out", default="out/fly.mp4")
+    ap.add_argument("--out", default="out/humanoid.mp4")
     ap.add_argument("--food", action="store_true")
     ap.add_argument("--predator", action="store_true")
+    ap.add_argument("--no-harness", action="store_true")
     args = ap.parse_args()
 
     if args.drug is not None and args.drug not in list_products():
@@ -29,7 +30,8 @@ def main():
 
     from sim.stimuli import StimulusConfig
     cfg = StimulusConfig(food=args.food, predator=args.predator)
-    s = DrugBodySim(drug_name=args.drug, dose=args.dose, stim_cfg=cfg)
+    s = HumanPipelineSim(drug_name=args.drug, dose=args.dose,
+                         harness=not args.no_harness, stim_cfg=cfg)
     schedule = []
     if args.food:
         schedule.append((0.5, "food"))
@@ -38,9 +40,8 @@ def main():
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     print(f"rendering {args.duration}s of simulated time to {args.out} ...")
-    metrics, _ = s.run(duration=args.duration,
-                       camera=s.track_cam_name, out_path=args.out,
-                       stim_schedule=schedule)
+    metrics, _ = s.render_video(out_path=args.out, duration=args.duration,
+                                stim_schedule=schedule)
     print(json.dumps(metrics, indent=2)[:800])
     s.close()
 

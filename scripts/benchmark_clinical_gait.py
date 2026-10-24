@@ -208,12 +208,12 @@ def benchmark_simulation():
     print(f"  Double Support Phase  : {double_support_pct:5.1f}% (Adult Norm: 20 - 24%)")
 
     # 5. Clinical Ataxia Comparison (GABA_A Receptor Blockade vs. Healthy)
-    print("\nRunning drug-induced ataxia simulation (GABA_A block, rdl_phi=0.85)...")
+    print("\nRunning drug-induced ataxia simulation (GABA_A block, gaba_a_phi=0.85)...")
     sim_ataxic = HumanPipelineSim(
         drug_name=None,
         harness=True,
         harness_support=1.0,
-        sim_params_override={"rdl_phi": 0.85},
+        sim_params_override={"gaba_a_phi": 0.85},
     )
     
     ataxic_stride_times = []

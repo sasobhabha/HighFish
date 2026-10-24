@@ -1,0 +1,43 @@
+{
+  "dimensions": {
+    "x": [
+      1.6e-8,
+      "m"
+    ],
+    "y": [
+      1.6e-8,
+      "m"
+    ],
+    "z": [
+      3e-8,
+      "m"
+    ]
+  },
+  "position": [
+    27857.421875,
+    19260.626953125,
+    4340.5
+  ],
+  "crossSectionScale": 77.02084520161262,
+  "projectionScale": 262144,
+  "layers": [
+    {
+      "type": "image",
+      "source": "gs://fish1-public/clahe_231218/|neuroglancer-precomputed:",
+      "tab": "source",
+      "name": "clahe_231218"
+    },
+    {
+      "type": "segmentation",
+      "source": "gs://fish1-public/masking/artifact_16nm_20210319_8601174/|neuroglancer-precomputed:",
+      "tab": "segments",
+      "segments": [],
+      "name": "artifact_16nm_20210319_8601174"
+    }
+  ],
+  "selectedLayer": {
+    "visible": true,
+    "layer": "clahe_231218"
+  },
+  "layout": "xy"
+}

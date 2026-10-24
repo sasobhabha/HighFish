@@ -2,9 +2,9 @@
 """End-to-end human locomotion pipeline.
 
 Wires:
-  FlyWire v783 connectome (FlyWireNeuralSim)
-    ↓ (descending neuron population rates)
-  Neuro-Human Translation Layer (DNToHumanTranslator -> HumanIntent)
+  Zebrafish (Fish1) connectome (ZebrafishNeuralSim)
+    ↓ (hindbrain reticulospinal-like readout rates)
+  Direct Motor Readout (ZebrafishReadout -> HumanIntent)
     ↓ (cadence, stride, coordination, motor tone)
   Biped Central Pattern Generator & Limb Kinematics (BipedCPG + BipedGaitKinematics)
     ↓ (joint angle target trajectories)
@@ -28,17 +28,28 @@ if str(ROOT) not in sys.path:
 
 from sim.drug_engine import drug_modulation
 from sim.human_gait import BipedCPG, BipedGaitKinematics
-from sim.human_translation import DNToHumanTranslator, HumanIntent
+from sim.fish_readout import ZebrafishReadout, HumanIntent
 from sim.humanoid_body import HumanoidBodySim
-from sim.neural_sim import FlyWireNeuralSim
+from sim.neural_sim import ZebrafishNeuralSim
 from sim.stimuli import StimulusConfig, StimulusManager
 
+# ---------------------------------------------------------------------------
 NEURAL_DT = 0.002       # Neural integration step (s)
 PHYSICS_DT = 0.002      # MuJoCo physics integration step (s)
 
+# Limp-on-collapse dwell: pelvis must stay below the fall threshold this long
+# (no recovery) before the motors are cut and gravity finishes the fall.
+FALL_DWELL_S = 0.3
+
+# Vestibulospinal balance-authority mapping: closed-loop balance assist scales
+# with motor tone x posture (erectness). Healthy walk -> full balance;
+# drug-crushed tone/posture -> weak balance -> real topple + fall.
+BALANCE_BASE = 0.15
+BALANCE_GAIN_SCALE = 0.85
+
 
 class HumanPipelineSim:
-    """Integrated simulation pipeline coupling FlyWire neural dynamics to a humanoid biped."""
+    """Integrated simulation pipeline coupling zebrafish-connectome neural dynamics to a humanoid biped."""
 
     def __init__(
         self,
@@ -63,13 +74,28 @@ class HumanPipelineSim:
             self.sim_params.update(sim_params_override)
             self.mod["sim_params"] = self.sim_params
 
-        # 2. FlyWire Connectome Rate Network
-        self.neural = FlyWireNeuralSim()
-        if self.mod.get("fly_mapping"):
-            self.neural.apply_drug(self.mod["fly_mapping"], self.sim_params)
+        # 2. Zebrafish Connectome Rate Network
+        self.neural = ZebrafishNeuralSim()
+        if self.mod.get("fish_mapping"):
+            self.neural.apply_drug(self.mod["fish_mapping"], self.sim_params)
+        elif sim_params_override:
+            # sim_params-only override (e.g. the GABA_A-block assay run with
+            # drug_name=None): derive receptor-blocker mapping from the *_phi
+            # occupancy keys so the network actually receives the block.
+            _L = "_phi"
+            mapping = {}
+            for key in sim_params_override:
+                system = key[:-len(_L)] if key.endswith(_L) else None
+                if system == "rdl":            # legacy Drosophila-era name
+                    system = "gaba_a"
+                if system:
+                    mapping[system] = {"direction": "antagonist"}
+            if mapping:
+                self.neural.apply_drug(mapping, self.sim_params)
 
-        # 3. Translation Layer
-        self.translator = DNToHumanTranslator()
+        # 3. Direct Motor Readout (hindbrain readout -> intent)
+        self.translator = ZebrafishReadout()
+        self.translator.all_dn_idx = self.neural.readout_idx
 
         # 4. Biped CPG & Kinematics
         self.cpg = BipedCPG(seed=seed)
@@ -81,6 +107,24 @@ class HumanPipelineSim:
             harness_support=harness_support,
             dt=PHYSICS_DT,
         )
+
+        # Freejoint walking needs softly-damped leg servos (gait-critical);
+        # the harness model keeps its original tuning untouched.
+        if not harness:
+            for _joint, _kp in (("knee", 500.0), ("hip_pitch", 600.0), ("ankle", 60.0)):
+                _aid = self.body.act_map.get(f"act_left_{_joint}")
+                if _aid is None:
+                    continue
+                for _pre in ("left_", "right_"):
+                    _aid = self.body.act_map[f"act_{_pre}{_joint}"]
+                    self.body.mj_model.actuator_biasprm[_aid, 2] = -(_kp * 0.03)
+            # Gait initiation: real biped gait must ramp in, or t=0 full CPG
+            # amplitude kicks the freed body off balance instantly. The full
+            # stride intent (clip 1.4) also overswings an unassisted biped,
+            # so freejoint mode walks on a moderated stride.
+            self.kin.start_ramp = 0.6
+            self.kin.stride_scale = 0.65
+            self.kin.max_slew = 8.0
 
         safe_name = "".join(c if c.isalnum() else "_" for c in (drug_name or "vehicle"))[:30]
         self.trial_id = f"human_trial_{int(time.time())}_{safe_name}"
@@ -126,6 +170,9 @@ class HumanPipelineSim:
 
         t_sim = 0.0
         terminated = None
+        fall_time_s = None
+        state = None
+        fall_window_start = None   # dwell timer: sustained buckle = real fall
         t_wall_start = time.time()
         intent = self.translator.translate(self.neural, self.mod, self.stim_mgr)
 
@@ -134,14 +181,15 @@ class HumanPipelineSim:
 
             # 1. Update stimulus drives based on humanoid position
             curr_pos = self.body.mj_data.xpos[self.body.pelvis_id]
-            pos_mm = np.array([curr_pos[0] * 1000.0, curr_pos[1] * 1000.0, curr_pos[2] * 1000.0])
+            pos = np.array(curr_pos, dtype=float)  # meters (stimulus scale)
             fwd_vec = np.array([1.0, 0.0, 0.0])
 
             stim_signals = self.stim_mgr.update(
                 t=t_sim,
-                fly_pos=pos_mm,
-                fly_forward=fwd_vec,
+                animal_pos=pos,
+                animal_forward=fwd_vec,
                 dn_drive=self.last_drive,
+                dt=PHYSICS_DT,
             )
             self.neural.apply_stim(
                 food_gain=stim_signals.get("food_gain", 0.0),
@@ -149,17 +197,17 @@ class HumanPipelineSim:
                 turn_bias=stim_signals.get("turn_bias", 0.0),
             )
 
-            # 3. Step FlyWire rate network at 50 Hz (every 10 physics steps, tau_r = 20ms)
+            # 3. Step zebrafish rate network at 50 Hz (every 10 physics steps, tau_r = 20ms)
             if step_idx % 10 == 0:
                 self.neural.step()
-                r_dn = float(np.mean(self.neural.r[self.translator.all_dn_idx]))
+                r_dn = self.neural.readout_output()
                 p_int = float(stim_signals.get("predator_intensity", 0.0))
                 if p_int > 0:
                     self.last_drive = min(2.0, r_dn + 0.6 * p_int)
                 else:
                     self.last_drive = r_dn
 
-                # 4. Translate descending readout -> HumanIntent
+                # 4. Translate hindbrain readout -> HumanIntent
                 intent = self.translator.translate(self.neural, self.mod, self.stim_mgr)
 
             # 5. Advance Biped CPG & Kinematics (at PHYSICS_DT = 0.002s)
@@ -167,10 +215,29 @@ class HumanPipelineSim:
             joint_targets = self.kin.compute_joint_targets(PHYSICS_DT, phi_l, phi_r, intent)
 
             # 6. Advance MuJoCo Physics
-            self.body.harness_support = self.harness_support * float(np.clip(intent.posture_height, 0.2, 1.0))
-            state = self.body.step(joint_targets)
+            # Limp-on-collapse: if the pelvis stays below the fall threshold
+            # for FALL_DWELL_S without recovering, the knees have buckled for
+            # good -- cut motor drive so gravity finishes the fall (no ghost
+            # sitting with buckled knees held by servos). Brief bounces that
+            # recover are tolerated.
+            if (not self.body.actuators_released and state is not None
+                    and self.body.step_count > 0):
+                if state["z"] < 0.45:
+                    if fall_window_start is None:
+                        fall_window_start = t_sim
+                    elif t_sim - fall_window_start >= FALL_DWELL_S:
+                        self.body.release_actuators()
+                        fall_time_s = fall_window_start
+                else:
+                    fall_window_start = None
 
-            # 7. Update live viewer at 60 Hz with wall-clock sync scaled by timelapse factor
+            # Vestibulospinal balance authority: tone x erectness x reciprocal
+            # coordination, low-pass filtered so brief neural wobbles don't kill
+            # balance (real balance reactions average over tens of ms).
+            bal_raw = BALANCE_BASE + BALANCE_GAIN_SCALE * float(np.clip(
+                intent.motor_tone * intent.posture_height * intent.coordination, 0.0, 1.0))
+            self.body.balance_gain = (0.90 * self.body.balance_gain + 0.10 * bal_raw)
+            state = self.body.step(joint_targets)
             if viewer is not None and step_idx % 8 == 0:
                 if not viewer.is_running():
                     break
@@ -214,6 +281,7 @@ class HumanPipelineSim:
             "dose": self.dose,
             "duration_s": round(t_sim, 3),
             "terminated": terminated,
+            "fall_time_s": fall_time_s,
             "outcome": "fallen" if body_metrics["fall_detected"] else "completed",
             "body_metrics": body_metrics,
             "intent_summary": intent_summary,
@@ -221,7 +289,7 @@ class HumanPipelineSim:
             "reaction_times": self.stim_mgr.reaction_times(),
             "stimulus_events": self.stim_mgr.history,
             "pharmacology": {
-                "fly_mapping": self.mod.get("fly_mapping", {}),
+                "fish_mapping": self.mod.get("fish_mapping", {}),
                 "sim_params": self.sim_params,
             },
         }
@@ -274,18 +342,20 @@ class HumanPipelineSim:
             self.neural.step()
 
         t_sim = 0.0
+        state = None
         intent = self.translator.translate(self.neural, self.mod, self.stim_mgr)
         for step_idx in range(n_steps):
             t_sim = step_idx * PHYSICS_DT
             curr_pos = self.body.mj_data.xpos[self.body.pelvis_id]
-            pos_mm = np.array([curr_pos[0] * 1000.0, curr_pos[1] * 1000.0, 0.0])
+            pos = np.array([curr_pos[0], curr_pos[1], 0.0])  # meters (stimulus scale)
             fwd_vec = np.array([1.0, 0.0, 0.0])
 
             stim_signals = self.stim_mgr.update(
                 t=t_sim,
-                fly_pos=pos_mm,
-                fly_forward=fwd_vec,
+                animal_pos=pos,
+                animal_forward=fwd_vec,
                 dn_drive=self.last_drive,
+                dt=PHYSICS_DT,
             )
             self.neural.apply_stim(
                 food_gain=stim_signals.get("food_gain", 0.0),
@@ -294,7 +364,7 @@ class HumanPipelineSim:
             )
             if step_idx % 10 == 0:
                 self.neural.step()
-                r_dn = float(np.mean(self.neural.r[self.translator.all_dn_idx]))
+                r_dn = self.neural.readout_output()
                 p_int = float(stim_signals.get("predator_intensity", 0.0))
                 if p_int > 0:
                     self.last_drive = min(2.0, r_dn + 0.6 * p_int)
@@ -304,7 +374,15 @@ class HumanPipelineSim:
             phi_l, phi_r = self.cpg.step(PHYSICS_DT, intent)
             joint_targets = self.kin.compute_joint_targets(PHYSICS_DT, phi_l, phi_r, intent)
 
-            self.body.harness_support = self.harness_support * float(np.clip(intent.posture_height, 0.2, 1.0))
+            # Advance MuJoCo physics (same limp-on-collapse as run())
+            if (not self.body.actuators_released
+                    and self.body.step_count > 0
+                    and state is not None and state["z"] < 0.45):
+                self.body.release_actuators()
+            # Vestibulospinal balance authority (same smoothing as run())
+            bal_raw = BALANCE_BASE + BALANCE_GAIN_SCALE * float(np.clip(
+                intent.motor_tone * intent.posture_height * intent.coordination, 0.0, 1.0))
+            self.body.balance_gain = (0.90 * self.body.balance_gain + 0.10 * bal_raw)
             state = self.body.step(joint_targets)
 
             if step_idx % render_interval == 0:

@@ -1,0 +1,15 @@
+{
+ "total_synapses": 32768,
+ "exc_gt_cells": 244,
+ "inh_gt_cells": 141,
+ "exc_out_type_distribution": {
+  "1": 623,
+  "2": 2309
+ },
+ "inh_out_type_distribution": {
+  "1": 1588,
+  "2": 350
+ },
+ "exc_n": 2932,
+ "inh_n": 1938
+}

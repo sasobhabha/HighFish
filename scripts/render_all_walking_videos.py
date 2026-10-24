@@ -125,14 +125,15 @@ def render_walking_video(
     for step_idx in range(n_steps):
         t_sim = step_idx * PHYSICS_DT
         curr_pos = sim.body.mj_data.xpos[sim.body.pelvis_id]
-        pos_mm = np.array([curr_pos[0] * 1000.0, curr_pos[1] * 1000.0, 0.0])
+        pos = np.array(curr_pos, dtype=float)  # meters (stimulus scale)
         fwd_vec = np.array([1.0, 0.0, 0.0])
 
         stim_signals = sim.stim_mgr.update(
             t=t_sim,
-            fly_pos=pos_mm,
-            fly_forward=fwd_vec,
+            animal_pos=pos,
+            animal_forward=fwd_vec,
             dn_drive=sim.last_drive,
+            dt=PHYSICS_DT,
         )
         sim.neural.apply_stim(
             food_gain=stim_signals.get("food_gain", 0.0),
@@ -251,7 +252,7 @@ def generate_gallery_markdown(catalog: list[dict]) -> str:
     lines = [
         "# 3D Humanoid Locomotion Video Gallery: All 17 Drugs + Vehicle Control",
         "",
-        "This gallery presents offscreen MuJoCo 3D tracking-camera video recordings of the biped humanoid locomotion model driven by the FlyWire v783 connectome (139,255 neurons | 1,305 DNs) for all canonical drugs and baseline vehicle control.",
+        "This gallery presents offscreen MuJoCo 3D tracking-camera video recordings of the biped humanoid locomotion model driven by the zebrafish Fish1 connectome (Petkova 2025, agglo v2a — 876,835 neurons, E/I-resolved) for all canonical drugs and baseline vehicle control.",
         "",
         "Each video features a real-time clinical HUD displaying instant forward speed, cadence, stride length, motor tone, and gait state.",
         "",

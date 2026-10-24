@@ -359,10 +359,67 @@ class HumanoidBodySim:
         self.contact_r_log: list[bool] = []
         self.harness_load_log: list[float] = []
         self.ctrl_energy_log: list[float] = []
+        self.actuators_released = False
         self.step_count = 0
+        # Closed-loop balance assist state (freejoint mode only)
+        self.harness = bool(harness)
+        # Small physiological corrections ONLY: a horizontal COM-correction
+        # force bounded far below body weight (it nudges the COM over the
+        # support polygon -- it never tows or carries the body) and a bounded
+        # pitch/roll restorative torque (ankle/hip strategy, Horak 1996).
+        # No vertical force at all: the legs carry the weight, falls are real.
+        self.balance_gain = 1.0          # 0..1 vestibulospinal balance authority
+        self.balance_anchor_x = 0.0      # advancing COM reference point
+        self.BAL_K_POS = 1200.0          # N/m horizontal pelvis spring
+        self.BAL_K_DAMP = 150.0          # N*s/m damping
+        self.BAL_K_TILT = 900.0          # N*m/rad pitch/roll corrective torque
+        self.BAL_TILT_DAMP = 60.0        # N*m*s/rad
+        self.BAL_F_MAX = 150.0           # N ~= 23% body weight: nudge, not tow
+        self.BAL_TAU_MAX = 250.0         # N*m torque cap (hip/ankle strategy)
+        self.balance_enabled = True       # internal postural strategies active
+        # --- Internal postural strategy (freejoint): joint-target biases ---
+        # Balance reactions act INSIDE the body (foot/hip torques against the
+        # ground), never as external forces on the freejoint. Gains are
+        # rad-per-m of COM error; SIGNS are calibrated empirically because the
+        # ankle/hip actuator sign conventions come from the MJCF.
+        self.BAL_S_ANK = 1.0             # ankle-pitch strategy sign
+        self.BAL_K_ANK = 0.0             # rad per m of sagittal COM error
+        self.BAL_S_HIP = 1.0             # hip-pitch (hip) strategy sign
+        self.BAL_K_HIP = 0.0             # rad per m of sagittal COM error
+        self.BAL_S_ROLL = 1.0            # hip-roll lateral strategy sign
+        self.BAL_K_ROLL = 0.0            # rad per m of lateral COM error
+        self.BAL_K_KNEE = 0.0            # knee-extension gain per m of sag
+        self.BAL_K_TILT_HIP = 0.0        # rad per rad of torso pitch (hip strategy)
+        self.BAL_K_TILT_ROLL = 0.0       # rad per rad of torso roll (lateral strategy)
+        self.BAL_BIAS_MAX = 0.35         # rad cap per joint
+        self.Z_REF = 0.915               # erected standing pelvis height (m)
+        # Rest-pose operating point (freejoint): real quiet stance holds the
+        # COM ~2-3 cm AHEAD of the ankle axis via constant plantarflexion
+        # torque (Winter Ch. 4). The MJCF rest pose sits COM-over-axis, a
+        # knife-edge equilibrium that diverges at the first perturbation, so
+        # in freejoint mode targets are biased toward a lean-forward operating
+        # point (rest_bias) and ankle servos get extra stiffness (kp_scale).
+        self.rest_bias: dict[str, float] = {}   # pose bias: joint name -> rad
+        self.kp_scale: dict[str, float] = {}    # per-actuator gain multipliers
+        self._base_gain = None                  # captured on first apply
+
+    def release_actuators(self):
+        """Kill all motor drive: joints go limp (gravity + damping only).
+
+        Zeroes actuator gain and position-bias terms at the model level, so
+        from this step on the body is a pure ragdoll under full MuJoCo physics
+        -- knees buckle and the body actually collapses to the floor instead
+        of being held in a static buckled-knee pose by position servos.
+        """
+        self.mj_model.actuator_gainprm[:, 0] = 0.0
+        self.mj_model.actuator_biasprm[:, 1] = 0.0
+        self.actuators_released = True
 
     def reset(self):
         mujoco.mj_resetData(self.mj_model, self.mj_data)
+        self.actuators_released = False
+        if self.harness is False:
+            self._center_rest_com()
         self.pos_log.clear()
         self.time_log.clear()
         self.contact_l_log.clear()
@@ -371,17 +428,127 @@ class HumanoidBodySim:
         self.ctrl_energy_log.clear()
         self.step_count = 0
 
+    REST_COM_X = 0.05  # m: foot center (support polygon [-0.05, +0.15])
+
+    def balance_joint_biases(
+        self, joint_targets: dict[str, float]
+    ) -> dict[str, float]:
+        """Internal postural-strategy biases (freejoint mode, scaled by balance_gain).
+
+        Models the ankle strategy + hip strategy of human postural control
+        (Winter, Ch. 4; Horak & Macpherson 1996): corrective torques produced
+        INSIDE the body by leg muscles, applied as joint *target* biases so
+        the vestibulospinal reflex itself saturates/buckles under impaired
+        drive just like the limbs do. No external forces or tows.
+        """
+        if not self.balance_enabled:
+            return {}
+        gain = float(np.clip(self.balance_gain, 0.0, 1.0))
+
+        # COM reference: pelvis pose; support base: feet currently in stance
+        pel = self.mj_data.xpos[self.pelvis_id]
+        lx, ly = self._foot_pos("left_foot_geom")
+        rx, ry = self._foot_pos("right_foot_geom")
+        cl = bool(self.contact_l_log[-1]) if self.contact_l_log else True
+        cr = bool(self.contact_r_log[-1]) if self.contact_r_log else True
+        pts = [p for p, on in (((lx, ly), cl), ((rx, ry), cr)) if on]
+        if not pts:
+            pts = [(lx, ly), (rx, ry)]
+        cx = float(np.mean([p[0] for p in pts]))
+        cy = float(np.mean([p[1] for p in pts]))
+
+        x_err = pel[0] - cx            # sagittal COM offset over support base
+        y_err = pel[1] - cy            # lateral COM offset
+
+        q = self.mj_data.qpos[3:7]
+        mat = np.zeros(9)
+        mujoco.mju_quat2Mat(mat, q)
+        z_axis = mat.reshape(3, 3)[:, 2]
+        tilt = np.cross(np.array([0.0, 0.0, 1.0]), z_axis)
+        sag = float(np.clip(self.Z_REF - pel[2], 0.0, 0.35))
+
+        cap = self.BAL_BIAS_MAX
+        # tilt = world_z x body_z: pitch tilt lands in tilt[1] (roll in
+        # tilt[0]); (body tilted backward -> tilt[1] < 0).
+        bias_ank = float(np.clip(
+            gain * self.BAL_S_ANK * self.BAL_K_ANK * x_err, -cap, cap))
+        bias_hip = float(np.clip(
+            gain * self.BAL_S_HIP * (
+                self.BAL_K_HIP * x_err
+                + self.BAL_K_TILT_HIP * (-tilt[1])   # sagittal pitch: trunk-forward when falling backward
+                + self.BAL_K_TILT_ROLL * tilt[0]),   # lateral roll stabilizer
+            -cap, cap))
+        bias_roll = float(np.clip(
+            gain * self.BAL_S_ROLL * self.BAL_K_ROLL * y_err, -cap, cap))
+        bias_knee = float(np.clip(-gain * self.BAL_K_KNEE * sag, -cap, cap))
+
+        out = {}
+        for side in ("left_", "right_"):
+            out[side + "ankle"] = bias_ank
+            out[side + "hip_pitch"] = bias_hip
+            out[side + "hip_roll"] = bias_roll
+            out[side + "knee"] = bias_knee
+        return {k: v for k, v in out.items() if k in joint_targets}
+
+    def apply_gain_scales(self):
+        """Apply per-actuator kp multipliers (freejoint stance calibration).
+
+        Position actuators: gainprm[0] = kp, biasprm[1] = -kp; both must move
+        together. No-op after release_actuators so limp-collapse stays limp.
+        """
+        if self.actuators_released:
+            return
+        if self._base_gain is None:
+            self._base_gain = self.mj_model.actuator_gainprm[:, 0].copy()
+        for name, scale in self.kp_scale.items():
+            act_name = f"act_{name}"
+            if act_name in self.act_map:
+                aid = self.act_map[act_name]
+                self.mj_model.actuator_gainprm[aid, 0] = self._base_gain[aid] * scale
+                self.mj_model.actuator_biasprm[aid, 1] = -self._base_gain[aid] * scale
+
+    def _foot_pos(self, geom_name: str) -> tuple[float, float]:
+        """World (x, y) of a foot geom's center by geom id lookup."""
+        geom_id = mujoco.mj_name2id(
+            self.mj_model, mujoco.mjtObj.mjOBJ_GEOM, geom_name)
+        if geom_id < 0:
+            return 0.0, 0.0
+        pos = self.mj_data.geom_xpos[geom_id]
+        return float(pos[0]), float(pos[1])
+
     def step(self, joint_targets: dict[str, float]) -> dict[str, Any]:
-        """Applies position targets to actuators and advances physics by one step."""
-        # Set control targets
+        """Applies position targets to actuators and advances physics by one step.
+
+        In freejoint (harness=False) mode the internal postural-strategy
+        biases (ankle/hip/knee joint-target corrections scaled by
+        `self.balance_gain`) keep the COM over its support base. There are NO
+        external forces on the freejoint -- the legs carry the body weight,
+        so when drive collapses the knees genuinely buckle and the whole body
+        falls under real gravity.
+        """
+        # Set control targets (with vestibulospinal balance biases)
+        if not self.harness and not self.actuators_released:
+            joint_targets = dict(joint_targets)
+            # Rest-pose lean: constant postural operating point ahead of any
+            # feedback (COM held ~2-3 cm in front of the ankle axis, as in
+            # real quiet stance) -- applied before the balance biases.
+            if self.rest_bias:
+                for jname, bias in self.rest_bias.items():
+                    if jname in joint_targets:
+                        joint_targets[jname] = float(joint_targets[jname]) + bias
+            for jname, bias in self.balance_joint_biases(joint_targets).items():
+                joint_targets[jname] = float(joint_targets[jname]) + bias
         for joint_name, target in joint_targets.items():
             act_name = f"act_{joint_name}"
             if act_name in self.act_map:
                 self.mj_data.ctrl[self.act_map[act_name]] = float(target)
 
-        # Apply BWS upward lift force proportional to harness support fraction
+        # Apply BWS upward lift force proportional to harness support fraction.
+        # Freejoint mode: no external assistance forces of any kind.
         if "act_harness_bws" in self.act_map:
             self.mj_data.ctrl[self.act_map["act_harness_bws"]] = 635.0 * float(np.clip(self.harness_support, 0.0, 1.0))
+        elif self.harness is False:
+            self.mj_data.xfrc_applied[self.pelvis_id, :] = 0.0
 
         # Advance physics
         mujoco.mj_step(self.mj_model, self.mj_data)

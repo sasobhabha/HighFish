@@ -47,7 +47,7 @@ ROOT = HERE.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from sim.human_translation import HumanIntent
+from sim.fish_readout import HumanIntent
 
 # Joint names matching the humanoid scaffold
 HUMANOID_JOINTS = [
@@ -85,7 +85,9 @@ class BipedCPG:
         if intent.freeze or intent.mode in ("freeze", "stand"):
             return self.phi_l, self.phi_r
 
-        nu = float(np.clip(intent.cadence, 0.2, 2.5))
+        # CPG phase advance: cadence_scale moderates the step rate for the
+        # unassisted biped (fast long strides are unmatched by balance).
+        nu = float(np.clip(intent.cadence * getattr(self, "cadence_scale", 1.0), 0.2, 2.5))
         # Reciprocal coupling attenuated by GABA_A antagonism
         w = self.w0 * float(np.clip(intent.coordination, 0.0, 1.0))
 
@@ -124,11 +126,38 @@ class BipedGaitKinematics:
     A_ARM_SWING = 0.42          # Counter-balancing shoulder pitch
     A_HIP_YAW_TURN = 0.15       # Yaw turn bias
 
-    # Max slew rate for actuator targets (rad/s) to prevent instantaneous torque spikes
+    # Max slew rate for actuator targets (rad/s) to prevent instantaneous torque spikes.
+    # Freejoint mode uses a tighter cap: violent target slews translate
+    # directly into free-body angular momentum the balance layer cannot
+    # absorb (in harness mode the rail does).
     MAX_TARGET_SPEED = 25.0
+    MAX_TARGET_SPEED_2D = 8.0
 
     def __init__(self):
         self.prev_targets: dict[str, float] = {j: 0.0 for j in HUMANOID_JOINTS}
+        # Gait-initiation ramp: stride amplitude scales 0 -> 1 over this many
+        # seconds once walking starts (real humans reach steady gait over
+        # ~0.3-0.6 s; Winter Ch. 4). 0.0 disables. Set by the pipeline in
+        # freejoint (unharnessed) mode where the instantaneous full CPG
+        # amplitude at t=0 kicks the biped off balance.
+        self.start_ramp: float = 0.0
+        self._t_active: float = 0.0
+        # Effective per-step target slew cap (rad/s); instance-level so the
+        # freejoint pipeline can tighten it (see MAX_TARGET_SPEED_2D).
+        self.max_slew: float = self.MAX_TARGET_SPEED
+        # Stride amplitude scale (0-1): freejoint biped uses a moderated
+        # stride; full readout stride (1.4 clip) overswings the unassisted
+        # body beyond what balance can control.
+        self.        stride_scale: float = 1.0
+        # Step-rate scale for the unassisted biped (see step()); CPG nu is
+        # multiplied by this before clipping.
+        cadence_scale: float = 1.0
+        # Gait-shape knobs (freejoint): stance knee flexion base (real walking
+        # has ~15 deg weight-acceptance flexion; a rigid-straight stance leg
+        # turns each step into a pogo hop) and ankle push-off scale (large
+        # push-off keeps the body airborne = flight phase).
+        self.stance_flex: float = 0.04
+        self.push_scale: float = 1.0
         # Neutral rest pose
         self.rest_angles: dict[str, float] = {
             "left_hip_pitch": 0.0,
@@ -148,6 +177,7 @@ class BipedGaitKinematics:
 
     def reset(self):
         self.prev_targets = dict(self.rest_angles)
+        self._t_active = 0.0
 
     def compute_joint_targets(
         self,
@@ -185,7 +215,14 @@ class BipedGaitKinematics:
             return self._apply_slew_limit(targets, dt)
 
         # Scaled amplitudes from motor intent
-        stride = float(np.clip(intent.stride_length, 0.0, 1.4))
+        stride = float(np.clip(intent.stride_length, 0.0, 1.4)) * self.stride_scale
+
+        # Gait-initiation ramp: ease stride amplitude in over start_ramp s
+        self._t_active += dt
+        if self.start_ramp > 0.0:
+            ramp = float(np.clip(self._t_active / self.start_ramp, 0.0, 1.0))
+            stride *= 0.2 + 0.8 * ramp
+
         turn = float(np.clip(intent.turn_intent, -1.0, 1.0))
         posture = float(np.clip(intent.posture_height, 0.2, 1.0))
         tone = float(np.clip(intent.motor_tone, 0.1, 1.0))
@@ -201,7 +238,7 @@ class BipedGaitKinematics:
         stride_r = stride * (1.0 - 0.35 * turn)
 
         # Knee stance flexion (shock absorption + crouch under low posture)
-        knee_stance = 0.04 + 0.35 * (1.0 - posture)
+        knee_stance = self.stance_flex + 0.35 * (1.0 - posture)
 
         # Compute leg joints for a given phase
         def _leg_kinematics(phi: float, s: float) -> tuple[float, float, float]:
@@ -218,7 +255,7 @@ class BipedGaitKinematics:
                 # Ankle push-off in late stance: delivers forward thrust against the floor
                 if phi > 0.3 * np.pi:
                     p_factor = (phi - 0.3 * np.pi) / (0.7 * np.pi)
-                    ankle = float(0.35 * s * np.sin(p_factor * np.pi))
+                    ankle = float(self.push_scale * 0.35 * s * np.sin(p_factor * np.pi))
                 else:
                     ankle = -0.04 * s * np.sin(phi / (0.3 * np.pi) * np.pi)
             else:
@@ -261,7 +298,7 @@ class BipedGaitKinematics:
 
     def _apply_slew_limit(self, targets: dict[str, float], dt: float) -> dict[str, float]:
         """Enforces actuator velocity limits to ensure numerical stability."""
-        max_d = self.MAX_TARGET_SPEED * dt
+        max_d = self.max_slew * dt
         limited = {}
         for k, v in targets.items():
             if k == "rail_vx":
@@ -281,7 +318,7 @@ class BipedGaitKinematics:
 
 
 if __name__ == "__main__":
-    from sim.human_translation import HumanIntent
+    from sim.fish_readout import HumanIntent
 
     print("Testing BipedCPG and BipedGaitKinematics...")
     cpg = BipedCPG()

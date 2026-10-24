@@ -9,7 +9,7 @@ Standards:
 - Real empirical data from:
     1. ChEMBL & PubChem dissociation constants (data/pharmacological_homology.json)
     2. David A. Winter's published clinical human gait normative biomechanics (1990, 2009)
-    3. Multi-trial empirical results from fly and humanoid tests (results/all_drugs_*.json)
+    3. Multi-trial empirical results fish-vs-humanoid tests (results/all_drugs_test-report.json)
     4. Two-compartment Bateman oral PK/PD model from sim/long_term_timelapse.py
 - Zero overlapping labels (consolidated labels for co-localized conditions, e.g., '8, 9' and '3, 4').
 - Statistically sound bar-and-scatter representation (no single-point boxplots).
@@ -68,24 +68,19 @@ plt.rcParams.update({
 
 
 def load_experimental_data():
-    """Load empirical locomotion results for fly and humanoid."""
-    fly_path = RESULTS_DIR / "all_drugs_fly_prototype_report.json"
+    """Load empirical fish-brain-drive and humanoid locomotion results."""
     human_path = RESULTS_DIR / "all_drugs_test_report.json"
     
-    with open(fly_path) as f:
-        fly_data = json.load(f)["conditions"]
     with open(human_path) as f:
         human_data = json.load(f)["conditions"]
         
-    fly_map = {c["canonical_name"]: c for c in fly_data}
-    
     records = []
     for hc in human_data:
         name = hc["canonical_name"]
         idx = hc["index"]
         h_vx = hc["humanoid_locomotion"]["vx_m_s"]
-        fc = fly_map.get(name, {})
-        f_vx = fc.get("fly_vx_mm_s", 0.0)
+        # fish-side signal: hindbrain readout forward drive (normalized 0-1)
+        f_drive = hc.get("neural_intent", {}).get("forward_drive", 0.0)
         
         # Categorize by pharmacological functional mechanism
         chem = hc["chemical_name"]
@@ -114,7 +109,7 @@ def load_experimental_data():
             "index": idx,
             "name": name,
             "chemical": chem,
-            "fly_vx": f_vx,
+            "fish_drive": f_drive,
             "human_vx": h_vx,
             "category": cat,
             "marker": marker,
@@ -279,14 +274,14 @@ def generate_figure_2():
 
 
 # =============================================================================
-# FIGURE 3: Cross-Phylum Locomotor Velocity Correlation
+# FIGURE 3: Cross-Level (Fish Brain -> Humanoid) Locomotor Correlation
 # =============================================================================
 def generate_figure_3(records):
-    """Figure 3: Cross-Phylum Locomotion Velocity Correlation (No drug lists; clean non-overlapping labels)."""
+    """Figure 3: Fish forward drive vs. humanoid velocity correlation."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 3.8))
     
-    # ---------------- PANEL A: Cross-Phylum Correlation Scatter ----------------
-    x_fly = np.array([r["fly_vx"] for r in records])
+    # ---------------- PANEL A: Cross-Level Correlation Scatter ----------------
+    x_fish = np.array([r["fish_drive"] for r in records])
     y_human = np.array([r["human_vx"] for r in records])
     
     cat_order = [
@@ -299,52 +294,32 @@ def generate_figure_3(records):
     
     for cat_name, marker, mface in cat_order:
         subset = [r for r in records if r["category"] == cat_name]
-        xs = [r["fly_vx"] for r in subset]
+        xs = [r["fish_drive"] for r in subset]
         ys = [r["human_vx"] for r in subset]
         if marker == "x":
             ax1.scatter(xs, ys, marker=marker, s=50, color="#000000", lw=1.6, label=cat_name, zorder=4)
         else:
             ax1.scatter(xs, ys, marker=marker, s=45, facecolors=mface, edgecolors="#000000", lw=1.1, label=cat_name, zorder=4)
             
-    # Clean, non-overlapping label mapping (consolidating co-localized points)
-    # 8 and 9 are identical (4.75, 1.32) -> '8, 9'
-    # 3 and 4 are identical (2.90, 1.14) -> '3, 4'
-    label_positions = {
-        "1": (3.77 + 0.08, 1.21 + 0.03),
-        "2": (2.62 + 0.08, 1.28 + 0.03),
-        "3, 4": (2.90 + 0.08, 1.14 - 0.05),
-        "5": (3.22 + 0.08, 0.97 - 0.05),
-        "6": (4.15 + 0.08, 1.21 + 0.03),
-        "7": (2.61 - 0.22, 1.07 - 0.05),
-        "8, 9": (4.75 + 0.08, 1.32 - 0.04),
-        "10": (2.92 + 0.08, 1.00 + 0.02),
-        "11": (0.04 + 0.12, 0.07 + 0.04),
-        "12": (4.34 + 0.08, 1.11 - 0.04),
-        "13": (3.46 - 0.24, 1.21 + 0.04),
-        "14": (3.84 + 0.08, 1.21 - 0.05),
-        "15": (3.47 + 0.08, 1.21 - 0.05),
-        "16": (1.97 + 0.08, 1.42 + 0.02),
-        "17": (2.76 + 0.08, 0.45 + 0.02),
-        "18": (0.09 + 0.12, 0.07 - 0.05),
-    }
-    
-    for lbl, (lx, ly) in label_positions.items():
-        ax1.text(lx, ly, lbl, fontsize=7.2, color="#222222", fontweight="bold")
+    # Small condition-number labels, offset to the right of each point
+    for r in records:
+        ax1.text(r["fish_drive"] + 0.02, r["human_vx"], str(r["index"]),
+                 fontsize=7.0, color="#222222", fontweight="bold")
         
     # Linear Regression Fit Line
-    slope, intercept, r_val, p_val, std_err = stats.linregress(x_fly, y_human)
-    x_line = np.linspace(0, 5.2, 100)
+    slope, intercept, r_val, p_val, std_err = stats.linregress(x_fish, y_human)
+    x_line = np.linspace(0, max(1.0, float(x_fish.max()) * 1.05), 100)
     y_line = slope * x_line + intercept
     ax1.plot(x_line, y_line, "k-", lw=1.3, zorder=2, label=f"Linear Fit: $R^2 = {r_val**2:.3f}$ ($p < 0.001$)")
     
     # Baseline Crosshairs
-    ax1.axvline(records[0]["fly_vx"], color="#aaaaaa", linestyle=":", lw=0.8, zorder=1)
-    ax1.axhline(records[0]["human_vx"], color="#aaaaaa", linestyle=":", lw=0.8, zorder=1)
+    ax1.axvline(float(records[0]["fish_drive"]), color="#aaaaaa", linestyle=":", lw=0.8, zorder=1)
+    ax1.axhline(float(records[0]["human_vx"]), color="#aaaaaa", linestyle=":", lw=0.8, zorder=1)
     
-    ax1.set_xlabel(r"Fly Prototype Velocity $v_x$ (mm/s)")
-    ax1.set_ylabel(r"Humanoid Redesign Velocity $v_x$ (m/s)")
-    ax1.set_title("A. Cross-Phylum Locomotion Correlation")
-    ax1.set_xlim(-0.2, 5.4)
+    ax1.set_xlabel(r"Zebrafish Hindbrain Forward Drive (normalized)")
+    ax1.set_ylabel(r"Humanoid Biped Velocity $v_x$ (m/s)")
+    ax1.set_title("A. Fish-Brain Drive to Humanoid Gait Correlation")
+    ax1.set_xlim(-0.02, 1.15)
     ax1.set_ylim(-0.08, 1.60)
     ax1.legend(loc="lower right", frameon=False, fontsize=7.0)
     
@@ -387,11 +362,11 @@ def generate_figure_3(records):
     ax2.set_ylim(-0.08, 1.60)
     
     plt.tight_layout()
-    svg_path = BW_DIR / "fig3_bw_cross_phylum_locomotion_scatter.svg"
-    png_path = BW_DIR / "fig3_bw_cross_phylum_locomotion_scatter.png"
+    svg_path = BW_DIR / "fig3_bw_cross_level_locomotion_scatter.svg"
+    png_path = BW_DIR / "fig3_bw_cross_level_locomotion_scatter.png"
     plt.savefig(svg_path, format="svg", bbox_inches="tight")
     plt.savefig(png_path, dpi=300, bbox_inches="tight")
-    plt.savefig(OUT_FIG_DIR / "fig3_bw_cross_phylum_locomotion_scatter.png", dpi=300, bbox_inches="tight")
+    plt.savefig(OUT_FIG_DIR / "fig3_bw_cross_level_locomotion_scatter.png", dpi=300, bbox_inches="tight")
     plt.close()
     print(f"Generated Figure 3: {svg_path}")
 

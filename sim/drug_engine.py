@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Drug engine: resolve a user-facing product name to fly-level modulation.
+"""Drug engine: resolve a user-facing product name to zebrafish-level modulation.
 
 Source of truth: data/pharmacology.yaml (all entries citation-keyed to
-citations.md).
+citations.md; zebrafish mappings verified, no guessed orthologs).
 """
 from functools import lru_cache
 from pathlib import Path
@@ -72,9 +72,8 @@ ALIASES: dict[str, str] = {
     "lisdexamfetamine": "Vyvanse",
     "amphetamine": "Vyvanse",
     "adderall": "Vyvanse",
-    "alcohol": "Jungle Juice (Everything mixed)",
-    "ethanol": "Jungle Juice (Everything mixed)",
-    "booze": "Jungle Juice (Everything mixed)",
+    "alcohol": "Ethanol (Alcohol)",
+    "booze": "Ethanol (Alcohol)",
     "jungle": "Jungle Juice (Everything mixed)",
     "jungle juice": "Jungle Juice (Everything mixed)",
     "multi compound": "Jungle Juice (Everything mixed)",
@@ -93,6 +92,50 @@ ALIASES: dict[str, str] = {
     "paracetamol": "Acetaminophen",
     "mirtazapine": "Mirtazapine",
     "remeron": "Mirtazapine",
+    # ===== literature-expanded catalog (2026) =====
+    "ptz": "Pentylenetetrazol (PTZ)",
+    "pentylenetetrazol": "Pentylenetetrazol (PTZ)",
+    "pentylenetetrazole": "Pentylenetetrazol (PTZ)",
+    "pentetrazol": "Pentylenetetrazol (PTZ)",
+    "metrazol": "Pentylenetetrazol (PTZ)",
+    "picrotoxin": "Picrotoxin",
+    "ptx": "Picrotoxin",
+    "strychnine": "Strychnine",
+    "diazepam": "Diazepam",
+    "valium": "Diazepam",
+    "benzodiazepine": "Diazepam",
+    "ethanol": "Ethanol (Alcohol)",
+    "drinks": "Ethanol (Alcohol)",
+    "drink": "Ethanol (Alcohol)",
+    "wine": "Ethanol (Alcohol)",
+    "beer": "Ethanol (Alcohol)",
+    "spirits": "Ethanol (Alcohol)",
+    "ketamine": "Ketamine",
+    "ket": "Ketamine",
+    "special k": "Ketamine",
+    "esketamine": "Ketamine",
+    "cocaine": "Cocaine",
+    "coke": "Cocaine",
+    "crack": "Cocaine",
+    "methylphenidate": "Methylphenidate (Ritalin)",
+    "ritalin": "Methylphenidate (Ritalin)",
+    "methylphenidate hydrochloride": "Methylphenidate (Ritalin)",
+    "concerta": "Methylphenidate (Ritalin)",
+    "fluoxetine": "Fluoxetine (Prozac)",
+    "prozac": "Fluoxetine (Prozac)",
+    "ssri": "Fluoxetine (Prozac)",
+    "sarafem": "Fluoxetine (Prozac)",
+    "haloperidol": "Haloperidol",
+    "haldol": "Haloperidol",
+    "antipsychotic": "Haloperidol",
+    "melatonin": "Melatonin",
+    "mt1": "Melatonin",
+    "donepezil": "Donepezil (Aricept)",
+    "aricept": "Donepezil (Aricept)",
+    "acetylcholinesterase inhibitor": "Donepezil (Aricept)",
+    "tetrodotoxin": "Tetrodotoxin",
+    "ttx": "Tetrodotoxin",
+    "pufferfish toxin": "Tetrodotoxin",
 }
 
 # Pure chemical names and active active ingredients (no commercial brand names)
@@ -114,6 +157,19 @@ CHEMICAL_NAMES: dict[str, str] = {
     "Vyvanse": "Lisdexamfetamine",
     "Robax": "Methocarbamol + Ibuprofen",
     "Jungle Juice (Everything mixed)": "Multi-Compound Mixture",
+    "Pentylenetetrazol (PTZ)": "Pentylenetetrazol (Metrazol)",
+    "Picrotoxin": "Picrotoxin",
+    "Strychnine": "Strychnine",
+    "Diazepam": "Diazepam (Valium)",
+    "Ethanol (Alcohol)": "Ethanol",
+    "Ketamine": "Ketamine",
+    "Cocaine": "Cocaine",
+    "Methylphenidate (Ritalin)": "Methylphenidate",
+    "Fluoxetine (Prozac)": "Fluoxetine",
+    "Haloperidol": "Haloperidol",
+    "Melatonin": "Melatonin",
+    "Donepezil (Aricept)": "Donepezil",
+    "Tetrodotoxin": "Tetrodotoxin",
 }
 
 
@@ -189,7 +245,7 @@ def resolve_drug_name(drug_name: str | None) -> str:
 
 
 def drug_modulation(drug_name: str | None, dose: float = 1.0) -> dict:
-    """Returns {product, cid, human, fly_mapping, sim_params, dose, citations}.
+    """Returns {product, cid, human, fish_mapping, sim_params, dose, citations}.
 
     dose in (0, 1] scales occupancy/gain parameters linearly (
     Hill-like model choice with n=1 per PDF Eq. 1; absolute concentrations
@@ -198,7 +254,7 @@ def drug_modulation(drug_name: str | None, dose: float = 1.0) -> dict:
     resolved = resolve_drug_name(drug_name)
     if resolved == "Vehicle control":
         return {"product": "Vehicle control", "cid": None, "human": None,
-                "fly_mapping": {}, "sim_params": {}, "dose": 0.0, "citations": []}
+                "fish_mapping": {}, "sim_params": {}, "dose": 0.0, "citations": []}
 
     ph = load_pharmacology()["products"]
     entry = ph[resolved]
@@ -211,12 +267,12 @@ def drug_modulation(drug_name: str | None, dose: float = 1.0) -> dict:
         "product": resolved,
         "cid": entry.get("cid"),
         "human": entry.get("human"),
-        "fly_mapping": entry["fly"].get("mapping") or {},
-        "fly_note": entry["fly"].get("note"),
+        "fish_mapping": entry["fish"].get("mapping") or {},
+        "fish_note": entry["fish"].get("note"),
         "sim_params": sim_params,
         "dose": dose,
         "citations": entry.get("human", {}).get("citations", [])
-        + entry["fly"].get("citations", []),
+        + entry["fish"].get("citations", []),
     }
 
 
@@ -226,5 +282,5 @@ if __name__ == "__main__":
     for name in prods:
         m = drug_modulation(name)
         print(f"  {get_chemical_name(name):34s} cid={str(m['cid']):>10s} "
-              f"systems={sorted(m['fly_mapping'])}")
+              f"systems={sorted(m['fish_mapping'])}")
 

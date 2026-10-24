@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-"""Automated batch test runner across all 17 canonical pharmacological agents + Vehicle Control.
+"""Automated batch test runner across all canonical pharmacological agents + Vehicle Control.
 
 Evaluates each substance across 4 integrated tiers:
-1. Molecular & Receptor Pharmacology (PubChem CID, targets, neurotransmitter systems)
-2. FlyWire Neural Connectome & Humanoid Intent Translation (DN firing, gait mode, motor tone)
+1. Molecular & Receptor Pharmacology (PubChem CID, targets, verified zebrafish systems)
+2. Fish1 Zebrafish Connectome & Humanoid Intent Translation (hindbrain readout rate,
+   gait mode, motor tone)
 3. 3D Humanoid Bipedal Locomotion (Forward speed, step symmetry, coordination, fall detection)
-4. 3D Obstacle Course Driving Impairment (Speed, SDLP lane weaving, brake reaction time, collisions, outcome)
-5. Pharmacokinetic & Chronobiological Profile (Half-life, peak concentration, fatigue / arousal at 2h & 12h)
+4. Pharmacokinetic & Chronobiological Profile (Half-life, peak concentration, fatigue /
+   arousal at 2h & 12h)
 """
 
 import json
-import os
 import sys
 import time
-from dataclasses import asdict
 from pathlib import Path
 
 # Add project root to sys.path
@@ -28,16 +27,14 @@ from sim.drug_engine import (
     format_drug_name,
     load_pharmacology,
 )
-from sim.neural_sim import FlyWireNeuralSim
-from sim.human_translation import DNToHumanTranslator
+from sim.neural_sim import ZebrafishNeuralSim
+from sim.fish_readout import ZebrafishReadout
 from sim.human_pipeline import HumanPipelineSim
-from sim.human_driving import HumanDrivingSim
 from sim.long_term_timelapse import PK_PROFILES, LongTermPKPDEngine
 
 
 def run_all_drugs_battery(
     human_walk_duration: float = 2.0,
-    driving_duration: float = 35.0,
     verbose: bool = True,
 ) -> dict:
     products = list_products()
@@ -64,16 +61,17 @@ def run_all_drugs_battery(
         # 1. Molecular Modulation
         mod = drug_modulation(None if is_control else drug, dose=1.0)
         cid = mod.get("cid")
-        systems = sorted(list(mod.get("fly_mapping", {}).keys()))
+        systems = sorted(list(mod.get("fish_mapping", {}).keys()))
         human_targets = mod.get("human", {}).get("targets", []) if mod.get("human") else []
 
-        # 2. Connectome & Human Intent Translation
-        neural_sim = FlyWireNeuralSim()
-        if mod.get("fly_mapping"):
-            neural_sim.apply_drug(mod["fly_mapping"], mod.get("sim_params", {}))
-        for _ in range(80):
+        # 2. Fish1 Connectome & Humanoid Intent Translation
+        neural_sim = ZebrafishNeuralSim()
+        if mod.get("fish_mapping"):
+            neural_sim.apply_drug(mod["fish_mapping"], mod.get("sim_params", {}))
+        for _ in range(300):
             neural_sim.step()
-        translator = DNToHumanTranslator()
+        translator = ZebrafishReadout()
+        translator.all_dn_idx = neural_sim.readout_idx
         intent = translator.translate(neural_sim, mod)
 
         # 3. Humanoid Bipedal Locomotion Physics (MuJoCo)
@@ -82,11 +80,7 @@ def run_all_drugs_battery(
         human_sim.close()
         bm = human_metrics.get("body_metrics", {})
 
-        # 4. 3D Obstacle Course Driving Impairment
-        driving_sim = HumanDrivingSim(drug_name=None if is_control else drug, dose=1.0)
-        drive_metrics = driving_sim.run(duration=driving_duration)
-
-        # 5. Pharmacokinetic & Chronobiological State
+        # 4. Pharmacokinetic & Chronobiological State
         pk_info = {}
         if not is_control and drug in PK_PROFILES:
             pk_engine = LongTermPKPDEngine(drug_name=drug, dose=1.0)
@@ -141,24 +135,13 @@ def run_all_drugs_battery(
                 "biped_coordination": round(bm.get("biped_coordination_index", 0.0), 3),
                 "fall_detected": bm.get("fall_detected", False),
             },
-            "driving_impairment": {
-                "outcome": drive_metrics.driving_outcome,
-                "mean_speed_m_s": round(drive_metrics.mean_speed_m_s, 2),
-                "mean_speed_kmh": round(drive_metrics.mean_speed_m_s * 3.6, 1),
-                "peak_speed_kmh": round(drive_metrics.peak_speed_m_s * 3.6, 1),
-                "sdlp_m": round(drive_metrics.sdlp_m, 3),
-                "brake_reaction_time_ms": round(drive_metrics.brake_reaction_time_ms, 1),
-                "cone_collisions": drive_metrics.cone_collisions,
-                "npc_collisions": drive_metrics.npc_collisions,
-                "course_completed": drive_metrics.course_completed,
-            },
             "pharmacokinetics": pk_info,
             "test_elapsed_s": round(elapsed, 2),
         }
         results.append(record)
 
         if verbose:
-            print(f" DONE in {elapsed:.2f}s | Walk: {record['humanoid_locomotion']['vx_m_s']:.2f} m/s | Drive: {drive_metrics.driving_outcome} ({record['driving_impairment']['mean_speed_kmh']} km/h)")
+            print(f" DONE in {elapsed:.2f}s | Walk: {record['humanoid_locomotion']['vx_m_s']:.2f} m/s | Mode: {intent.mode}")
 
     total_elapsed = time.time() - start_total_time
     print(f"\nCompleted test battery for all {len(test_conditions)} conditions in {total_elapsed:.2f}s!\n")
@@ -196,18 +179,18 @@ def run_all_drugs_battery(
 
 def generate_markdown_report(data: dict) -> str:
     lines = [
-        "# HighFly Pharmacological Test Battery Report: All 17 Drugs + Baseline Control",
+        f"# HighFish Pharmacological Test Battery Report: All {data['total_conditions'] - 1} Drugs + Baseline Control",
         "",
         f"- **Generated At**: `{data['timestamp']}`",
-        f"- **Conditions Evaluated**: `{data['total_conditions']}` (17 Canonical Substances + Vehicle Baseline)",
+        f"- **Conditions Evaluated**: `{data['total_conditions']}` (Canonical Substances + Vehicle Baseline)",
         f"- **Total Benchmark Execution Time**: `{data['total_elapsed_seconds']:.2f}s`",
-        f"- **Simulation Engine**: MuJoCo 3.9.0 + FlyWire v783 Connectome (139,255 Neurons | 1,305 DNs)",
+        f"- **Simulation Engine**: MuJoCo 3.9 + Fish1 Zebrafish Connectome (Petkova et al. 2025, E/I-resolved) -> Hindbrain Readout -> HumanIntent -> Biped CPG",
         "",
         "---",
         "",
         "## 1. Executive Summary Table",
         "",
-        "| # | Chemical Compound | Brand Name | PubChem CID | Biped Walk $v_x$ (m/s) | Gait Mode | Driving Outcome | SDLP (m) | Brake RT (ms) | Peak Drive (km/h) |",
+        "| # | Chemical Compound | Brand Name | PubChem CID | Hindbrain D_fwd | Gait Mode | Biped Walk $v_x$ (m/s) | Cadence (Hz) | Coordination $C_\\text{biped}$ | Motor Tone $T_\\text{motor}$ |",
         "|---|---|---|---|---|---|---|---|---|---|",
     ]
 
@@ -216,13 +199,13 @@ def generate_markdown_report(data: dict) -> str:
         chem = c["chemical_name"]
         brand = c["brand_name"]
         cid = str(c["pubchem_cid"]) if c["pubchem_cid"] is not None else "N/A"
+        ni = c["neural_intent"]
         walk_v = c["humanoid_locomotion"]["vx_m_s"]
-        mode = c["neural_intent"]["gait_mode"]
-        outcome = c["driving_impairment"]["outcome"]
-        sdlp = c["driving_impairment"]["sdlp_m"]
-        brt = c["driving_impairment"]["brake_reaction_time_ms"]
-        peak_spd = c["driving_impairment"]["peak_speed_kmh"]
-        lines.append(f"| {idx} | **{chem}** | *{brand}* | {cid} | {walk_v:.2f} | `{mode}` | `{outcome}` | {sdlp:.3f} | {brt:.0f} | {peak_spd:.1f} |")
+        mode = ni["gait_mode"]
+        lines.append(
+            f"| {idx} | **{chem}** | *{brand}* | {cid} | {ni['forward_drive']:.2f} | `{mode}` "
+            f"| {walk_v:.2f} | {ni['cadence_hz']:.2f} | {ni['coordination']:.2f} | {ni['motor_tone']:.2f} |"
+        )
 
     lines.extend([
         "",
@@ -236,37 +219,31 @@ def generate_markdown_report(data: dict) -> str:
         chem = c["chemical_name"]
         brand = c["brand_name"]
         cid = c["pubchem_cid"]
-        systems = ", ".join(c["systems"]) if c["systems"] else "none / no verified fly ortholog"
+        systems = ", ".join(c["systems"]) if c["systems"] else "none / no verified zebrafish ortholog"
         targets = "; ".join(c["human_targets"][:4]) if c["human_targets"] else "None (Vehicle Control)"
 
         ni = c["neural_intent"]
         hl = c["humanoid_locomotion"]
-        di = c["driving_impairment"]
         pk = c["pharmacokinetics"]
 
         lines.extend([
             f"### {c['index']}. {chem}",
             f"- **Brand Name**: *{brand}*",
             f"- **PubChem CID**: `{cid}`",
-            f"- **Fly Receptor Systems**: `{systems}`",
+            f"- **Zebrafish Receptor Systems**: `{systems}`",
             f"- **Human Molecular Targets**: {targets}",
             "",
             "#### Neural Intent & Bipedal Walking",
             f"- **Gait Mode**: `{ni['gait_mode']}` | **Motor Tone**: `{ni['motor_tone']:.2f}` | **Posture Height**: `{ni['posture_height']:.2f}`",
+            f"- **Hindbrain Descending Drive (D_fwd)**: `{ni['forward_drive']:.3f}` | **Coordination (C_biped)**: `{ni['coordination']:.3f}`",
             f"- **Biped Forward Velocity**: `{hl['vx_m_s']:.3f} m/s` (Straightness: `{hl['straightness_index']:.2f}`, Step Symmetry: `{hl['step_symmetry']:.2f}`)",
+            f"- **Cadence**: `{ni['cadence_hz']:.2f} Hz` | **Stride Length**: `{ni['stride_length_m']:.2f}`",
             f"- **Coordination Index**: `{hl['biped_coordination']:.2f}` | **Fall Detected**: `{hl['fall_detected']}`",
             "",
-            "#### 3D Obstacle Course Driving Impairment",
-            f"- **Course Outcome**: `{di['outcome']}` (Course Completed: `{di['course_completed']}`)",
-            f"- **Forward Speed**: Mean `{di['mean_speed_kmh']:.1f} km/h` (`{di['mean_speed_m_s']:.2f} m/s`) | Peak `{di['peak_speed_kmh']:.1f} km/h`",
-            f"- **Lateral Lane Weaving (SDLP)**: `{di['sdlp_m']:.3f} m`",
-            f"- **Emergency Brake Reaction Time (BRT)**: `{di['brake_reaction_time_ms']:.1f} ms`",
-            f"- **Impacts**: Pylon/Cone Hits: `{di['cone_collisions']}` | NPC Bot Collisions: `{di['npc_collisions']}`",
-            "",
             "#### Pharmacokinetics & Chronobiology",
-            f"- **Elimination Half-life ($t_{{1/2}}$)**: `{pk['t_half_elim_h']}h` | **Time to Peak ($T_{{\\max}}$)**: `{pk['t_max_h']}h`",
-            f"- **At $T+2.0\\text{{h}}$**: Plasma Conc: `{pk['conc_2h_pct']}%` | Perceived Fatigue: `{pk['fatigue_2h_pct']}%` | State: `{pk['state_2h']}`",
-            f"- **At $T+12.0\\text{{h}}$**: Plasma Conc: `{pk['conc_12h_pct']}%` | Perceived Fatigue: `{pk['fatigue_12h_pct']}%` | State: `{pk['state_12h']}`",
+            f"- **Elimination Half-life ($t_{{1/2}}$)**: `{pk['t_half_elim_h']}h` | **Time to Peak ($T_{{\\\\max}}$)**: `{pk['t_max_h']}h`",
+            f"- **At $T+2.0\\\\text{{h}}$**: Plasma Conc: `{pk['conc_2h_pct']}%` | Perceived Fatigue: `{pk['fatigue_2h_pct']}%` | State: `{pk['state_2h']}`",
+            f"- **At $T+12.0\\\\text{{h}}$**: Plasma Conc: `{pk['conc_12h_pct']}%` | Perceived Fatigue: `{pk['fatigue_12h_pct']}%` | State: `{pk['state_12h']}`",
             "",
             "---",
             "",

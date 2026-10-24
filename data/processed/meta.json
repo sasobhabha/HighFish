@@ -1,46 +1,41 @@
 {
-  "generated": "2026-09-30T08:26:19-0700",
-  "source": "FlyWire Codex bulk data, snapshot 783 (Oct 2023)",
-  "source_url": "https://codex.flywire.ai/api/download?dataset=fafb",
-  "storage_template": "https://storage.googleapis.com/flywire-data/codex/data/fafb/783/",
-  "n_neurons": 139255,
-  "n_edges_total_synapses": 34153568,
-  "n_edges": 2700513,
-  "edge_nt_distribution": {
-    "GABA": 865318,
-    "ACH": 2258155,
-    "GLUT": 654183,
-    "DA": 37705,
-    "SER": 37450,
-    "OCT": 17067
-  },
-  "classification_rows": 139255,
-  "cell_type_rows": 138327,
-  "missing_edge_endpoints": 0,
-  "super_class_counts": {
-    "optic": 77873,
-    "central": 32381,
-    "sensory": 16938,
-    "visual_projection": 7684,
-    "ascending": 1750,
-    "descending": 1305,
-    "sensory_ascending": 612,
-    "visual_centrifugal": 522,
-    "motor": 110,
-    "endocrine": 80
-  },
-  "nt_type_counts": {
-    "ACH": 82298,
-    "": 19658,
-    "GLUT": 19605,
-    "GABA": 16017,
-    "SER": 1021,
-    "DA": 584,
-    "OCT": 72
-  },
-  "cite": [
-    "Matsliah et al. 2024 Nature 632, https://www.nature.com/articles/s41586-024-07981-1",
-    "Dorkenwald et al. 2023/2024 FlyWire whole-brain connectome",
-    "codex.flywire.ai (Princeton Neuroscience Institute)"
-  ]
+ "dataset": "Fish1 (Petkova et al. 2025) larval zebrafish EM connectome, agglo v2a",
+ "annotation_layer": "syn_241003_agg241003_reorient_axde_ei_bayes_idx_pre_250410",
+ "n_cells": 876835,
+ "n_cells_raw": 13458709,
+ "n_synapses": 29474316,
+ "n_edges_total": 5787096,
+ "n_edges_E": 2956414,
+ "n_edges_I": 3374154,
+ "min_syn_total_kept": 10,
+ "ei_semantics": {
+  "type2": "excitatory",
+  "type1": "inhibitory",
+  "verification": {
+   "total_synapses": 32768,
+   "exc_gt_cells": 244,
+   "inh_gt_cells": 141,
+   "exc_out_type_distribution": {
+    "1": 623,
+    "2": 2309
+   },
+   "inh_out_type_distribution": {
+    "1": 1588,
+    "2": 350
+   },
+   "exc_n": 2932,
+   "inh_n": 1938
+  }
+ },
+ "voxel_scale_nm": [
+  8.0,
+  8.0,
+  30.0
+ ],
+ "axis_semantics": {
+  "ap_norm": "0 = anterior, 1 = posterior (outgoing-synapse mean x voxels normalized)",
+  "lr_norm": "-1 = left, +1 = right (outgoing-synapse median y sign convention)",
+  "roi": "anterior (ap<=0.15), central (0.15<ap<0.5), hindbrain (ap>=0.5; posterior half)"
+ },
+ "predecessor": "scripts/extract_fish1_syns.py -> scripts/parse_fishconnectome.py"
 }

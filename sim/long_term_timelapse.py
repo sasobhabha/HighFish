@@ -64,7 +64,7 @@ class DrugPKPDProfile:
 PK_PROFILES: dict[str, DrugPKPDProfile] = {
     "Caffeine": DrugPKPDProfile(
         name="Caffeine",
-        t_half_elim_h=5.0,        # Human CYP1A2 t1/2 ~ 4.5-5.5h (Fly ~4.0h)
+        t_half_elim_h=5.0,        # Human CYP1A2 t1/2 ~ 4.5-5.5h (zebrafish ~4.0h)
         t_half_abs_h=0.25,        # Fast oral absorption (~15-20 min)
         t_max_h=0.75,             # Peak plasma conc at 45 min
         tau_tolerance_h=3.5,      # Acute receptor adaptation
@@ -248,6 +248,150 @@ PK_PROFILES: dict[str, DrugPKPDProfile] = {
         masking_power=0.0,
         sedation_power=0.15,
         motor_block_power=0.0,
+    ),
+    # ===== literature-expanded neuropharmacology catalog (2026) =====
+    "Pentylenetetrazol (PTZ)": DrugPKPDProfile(
+        name="Pentylenetetrazol (PTZ)",
+        t_half_elim_h=2.0,        # rapid elimination after acute exposure
+        t_half_abs_h=0.10,
+        t_max_h=0.30,
+        tau_tolerance_h=1.0,
+        beta_tolerance=0.05,
+        masking_power=0.0,
+        sedation_power=0.0,
+        motor_block_power=0.0,    # proconvulsant: hyperexcitability, not motor block
+    ),
+    "Picrotoxin": DrugPKPDProfile(
+        name="Picrotoxin",
+        t_half_elim_h=2.5,
+        t_half_abs_h=0.10,
+        t_max_h=0.40,
+        tau_tolerance_h=1.0,
+        beta_tolerance=0.05,
+        masking_power=0.0,
+        sedation_power=0.0,
+        motor_block_power=0.0,
+    ),
+    "Strychnine": DrugPKPDProfile(
+        name="Strychnine",
+        t_half_elim_h=12.0,       # human strychnine elimination ~10-16h
+        t_half_abs_h=0.20,
+        t_max_h=1.0,
+        tau_tolerance_h=4.0,
+        beta_tolerance=0.10,
+        masking_power=0.0,
+        sedation_power=0.0,
+        motor_block_power=0.30,   # coordination collapse, not flaccid block
+    ),
+    "Diazepam": DrugPKPDProfile(
+        name="Diazepam",
+        t_half_elim_h=43.0,       # human diazepam t1/2 ~ 20-50h (+ desmethyldiazepam)
+        t_half_abs_h=0.30,
+        t_max_h=1.2,
+        tau_tolerance_h=10.0,
+        beta_tolerance=0.25,
+        masking_power=0.0,
+        sedation_power=0.90,      # GABA_A PAM - strong sedative
+        motor_block_power=0.10,
+    ),
+    "Ethanol (Alcohol)": DrugPKPDProfile(
+        name="Ethanol (Alcohol)",
+        t_half_elim_h=1.0,        # near-zero-order elimination in the practical range
+        t_half_abs_h=0.20,
+        t_max_h=0.50,
+        tau_tolerance_h=2.0,
+        beta_tolerance=0.30,
+        masking_power=0.10,
+        sedation_power=0.50,      # dose-dependent CNS depressant
+        motor_block_power=0.35,   # cerebellar gait ataxia
+    ),
+    "Ketamine": DrugPKPDProfile(
+        name="Ketamine",
+        t_half_elim_h=2.5,        # human ketamine t1/2 ~ 2-3h
+        t_half_abs_h=0.15,
+        t_max_h=0.40,
+        tau_tolerance_h=1.5,
+        beta_tolerance=0.40,
+        masking_power=0.20,
+        sedation_power=0.45,
+        motor_block_power=0.20,
+    ),
+    "Cocaine": DrugPKPDProfile(
+        name="Cocaine",
+        t_half_elim_h=0.8,        # human cocaine t1/2 ~ 0.5-1h
+        t_half_abs_h=0.05,
+        t_max_h=0.25,
+        tau_tolerance_h=0.5,
+        beta_tolerance=0.60,
+        masking_power=0.90,
+        sedation_power=0.0,
+        motor_block_power=0.0,
+    ),
+    "Methylphenidate (Ritalin)": DrugPKPDProfile(
+        name="Methylphenidate (Ritalin)",
+        t_half_elim_h=2.5,        # human MPH t1/2 ~ 2-3h
+        t_half_abs_h=0.40,
+        t_max_h=1.5,
+        tau_tolerance_h=2.0,
+        beta_tolerance=0.30,
+        masking_power=0.90,
+        sedation_power=0.0,
+        motor_block_power=0.0,
+    ),
+    "Fluoxetine (Prozac)": DrugPKPDProfile(
+        name="Fluoxetine (Prozac)",
+        t_half_elim_h=96.0,       # human fluoxetine t1/2 ~ 4-6 days (+ norfluoxetine)
+        t_half_abs_h=1.5,
+        t_max_h=6.0,
+        tau_tolerance_h=24.0,
+        beta_tolerance=0.20,
+        masking_power=0.10,
+        sedation_power=0.25,
+        motor_block_power=0.10,
+    ),
+    "Haloperidol": DrugPKPDProfile(
+        name="Haloperidol",
+        t_half_elim_h=20.0,       # human haloperidol t1/2 ~ 14-36h
+        t_half_abs_h=0.80,
+        t_max_h=3.0,
+        tau_tolerance_h=16.0,
+        beta_tolerance=0.15,
+        masking_power=0.0,
+        sedation_power=0.30,
+        motor_block_power=0.40,   # extrapyramidal motor suppression
+    ),
+    "Melatonin": DrugPKPDProfile(
+        name="Melatonin",
+        t_half_elim_h=0.75,       # human melatonin t1/2 ~ 30-60 min
+        t_half_abs_h=0.25,
+        t_max_h=0.75,
+        tau_tolerance_h=2.0,
+        beta_tolerance=0.20,
+        masking_power=0.0,
+        sedation_power=0.85,      # sleep-promoting axis
+        motor_block_power=0.0,
+    ),
+    "Donepezil (Aricept)": DrugPKPDProfile(
+        name="Donepezil (Aricept)",
+        t_half_elim_h=70.0,       # human donepezil t1/2 ~ 70h
+        t_half_abs_h=2.0,
+        t_max_h=4.0,
+        tau_tolerance_h=24.0,
+        beta_tolerance=0.10,
+        masking_power=0.10,
+        sedation_power=0.10,
+        motor_block_power=0.05,
+    ),
+    "Tetrodotoxin": DrugPKPDProfile(
+        name="Tetrodotoxin",
+        t_half_elim_h=2.0,        # renal elimination; human intoxication window ~ hours
+        t_half_abs_h=0.10,
+        t_max_h=0.35,
+        tau_tolerance_h=1.0,
+        beta_tolerance=0.05,
+        masking_power=0.0,
+        sedation_power=0.0,
+        motor_block_power=1.00,   # full Nav conduction block (paralysis)
     ),
 }
 
@@ -524,7 +668,7 @@ def generate_long_term_timelapse(
             ]
 
     print(f"\n=================================================================")
-    print(f"  HIGHFLY LONG-TERM PHARMACOLOGICAL TIMELAPSE: {drug_name.upper()}")
+    print(f"  HIGHFISH LONG-TERM PHARMACOLOGICAL TIMELAPSE: {drug_name.upper()}")
     print(f"=================================================================")
     print(f"  Chronological Timeline: 0.0h -> {total_hours:.1f}h ({len(checkpoints)} stroboscopic checkpoints)")
     print(f"  Pharmacokinetics: t1/2(elim) = {engine.profile.t_half_elim_h:.1f}h | t_max = {engine.profile.t_max_h:.2f}h")

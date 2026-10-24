@@ -276,5 +276,11 @@
         "Porzgen, Peter, et al. 'The Drosophila dopamine transporter: cloning and pharmacological characterization.' Molecular Brain Research 91.1-2 (2001): 25-35."
       ]
     }
-  }
+  },
+  "legacy_note": "LEGACY, partially superseded: the drosophila_ortholog / species_comparison sections date from the Drosophila FlyWire v783 prototype. The active fish framing lives in data/pharmacology.yaml + citations.md + the Fish1 zebrafish connectome (Petkova 2025). Only the compound-level literature Kd constants (Hill-Langmuir binding) are still consulted, by scripts/generate_bw_data_charts.py.",
+  "superseded_by": [
+    "data/pharmacology.yaml",
+    "data/zebrafish/fish1",
+    "citations.md"
+  ]
 }

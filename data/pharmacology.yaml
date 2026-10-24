@@ -1,69 +1,108 @@
-# Pharmacology table: 27 user-listed products -> verified receptor mechanisms.
+# Pharmacology table: 17 user-listed products + 13 literature-expanded
+# neuropharmacology agents -> verified zebrafish receptor mechanisms.
 #
 # POLICY:
-# - `cid` values were returned by PubChem PUG REST on 2026-09-30 (data/pubchem_cids.json).
+# - `cid` values were returned by PubChem PUG REST (data/pubchem_cids.json).
 # - `human.targets` are justified by the citation keys listed (citations.md, MLA 9).
-# - `fly.mapping` entries name ONLY receptor systems verified to exist in Drosophila
-#   (citation keys included). Where we could NOT verify a fly ortholog or fly effect,
-#   `fly.effect` is `null` and the entry says so explicitly.
+# - `fish.systems` name ONLY receptor systems verified to exist in larval/adult
+#   zebrafish (citation keys included). Where a mechanism has NO verified
+#   zebrafish ortholog or effect, it is explicitly NOT mapped and said so.
 # - Every entry lists `human_neuron_classes` (human neuroanatomy, cited) and
-#   `fly_neuron_classes` (FlyWire super_class / class terms from data/processed/).
-# - `sim_params` are MODELING CHOICES for the CPG/LIF layer (not measured pharmacology), following the PDF's Hill-occupancy formalism.
-
-schema_version: 1
+#   `fish_population` (which simulated populations the mechanism acts on).
+# - `sim_params` are MODELING CHOICES for the LIF/rate layer (not measured
+#   pharmacology), following the PDF's Hill-occupancy formalism:
+#     _phi  : receptor occupancy Phi in Eq. 2 (block-like)
+#     _gain : multiplicative synaptic/reuptake gain (agonist-like)
+#     da_/ser_gain : modulatory network gain
+#
+schema_version: 2
+connectome: fish1 (Petkova et al. 2025) larval zebrafish
 citations_file: citations.md
 
-receptor_systems:   # fly receptor systems used by the simulator
-  nachr:
-    name: nicotinic acetylcholine receptor (nAChR, Dalpha1-Dalpha7 / Dbeta subunits)
-    citations: [C8, C9, C10, C11, C12]
-    nt: ACH
-    effect_on_postsynaptic_drive: excitatory_blockable
-  rdl:
-    name: GABA-A-like ionotropic chloride channel (Rdl / resistant-to-dieldrin)
-    citations: [C121, C122, C123, C124, C127]
+receptor_systems:   # zebrafish receptor systems used by the simulator
+  gaba_a:
+    name: GABA-A ionotropic chloride channels (gabra1-8, gabrb1-4, gabrg; 23 subunits)
+    citations: [C1]
     nt: GABA
+    effect_on_postsynaptic_drive: inhibitory_blockable
+  glyr:
+    name: glycine-gated chloride channels (glra/glrba/glrbb; spinal cord, hindbrain)
+    citations: [C2]
+    nt: null
     effect_on_postsynaptic_drive: inhibitory_blockable
   glut_iontropic:
-    name: ionotropic glutamate receptors (GluCl family / NMDAR)
-    citations: [C124]
+    name: ionotropic glutamate receptors (grin1a/grin1b NMDA; AMPA gria)
+    citations: [C3]
     nt: GLUT
-    effect_on_postsynaptic_drive: mixed_blockable
-  ort_histamine:
-    name: histamine-gated chloride channel (ort / hclA, hisCl1 / hclB)
-    citations: [C144, C145, C146]
-    nt: null          # histamine is not one of the 6 predicted NT classes in codex v783
-    effect_on_postsynaptic_drive: inhibitory_blockable
-  ddat:
-    name: dopamine transporter (DAT/fumin locus)
-    citations: [C132, C133, C134, C137, C173, C174, C175, C176, C177]
+    effect_on_postsynaptic_drive: excitatory_blockable
+  nachr:
+    name: nicotinic acetylcholine receptors (chrna/chrnb neuronal subunits)
+    citations: [C4]
+    nt: ACH
+    effect_on_postsynaptic_drive: excitatory_blockable
+  machr:
+    name: muscarinic acetylcholine receptors (mAChR, locomotor network neuromodulation)
+    citations: [C5]
+    nt: ACH
+    effect_on_postsynaptic_drive: modulatory
+  dat:
+    name: dopamine transporter (slc6a3 DAT; amphetamine/MPH-sensitive)
+    citations: [C6]
     nt: DA
     effect_on_postsynaptic_drive: reuptake_site
-  5ht_receptors:
-    name: serotonin receptors (5-HT1A, 5-HT1B, 5-HT2A, 5-HT2B, 5-HT7)
-    citations: [C138, C139, C140, C143]
-    nt: SER
-    effect_on_postsynaptic_drive: modulatory
-  para_nav:
-    name: voltage-gated sodium channel (para / paralytic)
-    citations: [C149, C150, C151, C152]
+  nav:
+    name: voltage-gated sodium channels (scn1lab/Nav1.1 model; use-dependent blockers)
+    citations: [C7]
     nt: null
     effect_on_postsynaptic_drive: excitability
-  gaba_b:
-    name: metabotropic GABA-B receptor (GABA-B-R1/R2/R3)
-    citations: [C128, C129, C130, C131]
-    nt: GABA
+  adora:
+    name: adenosine receptors (adora1a, adora1b, adora2a; sleep-pressure axis)
+    citations: [C8, C9]
+    nt: null
     effect_on_postsynaptic_drive: modulatory
-  d1_like:
-    name: D1-like dopamine receptors (Dop1R1, Dop1R2)
-    citations: [C132, C133, C134, C135]
-    nt: DA
+  htr:
+    name: serotonin receptors (htr1aa, htr1ab, htr2a, htr2b; larval threat circuits)
+    citations: [C10, C11]
+    nt: SER
     effect_on_postsynaptic_drive: modulatory
+  hrh1:
+    name: histamine H1 receptor (hrh1; wakefulness / orexin-neuron development)
+    citations: [C12]
+    nt: null
+    effect_on_postsynaptic_drive: wake_axis
+  cnr1:
+    name: cannabinoid receptor 1 (cnr1; GABA/glutamatergic terminal modulation)
+    citations: [C13, C14]
+    nt: null
+    effect_on_postsynaptic_drive: presynaptic_release
+  gsk3:
+    name: GSK-3 beta (intracellular Wnt signaling; NOT a synaptic receptor)
+    citations: [C15]
+    nt: null
+    effect_on_postsynaptic_drive: intracellular_only
+  sert:
+    name: serotonin transporter SERT (sert / slc6a4a/4b; ~93% identical to human SLC6A4)
+    citations: [C200, C201]
+    nt: SER
+    effect_on_postsynaptic_drive: reuptake_site
   d2_like:
-    name: D2-like dopamine receptor (Dop2R)
-    citations: [C132, C137]
+    name: dopamine D2-family receptors (drd2a/drd2b; locomotor effects conserved with mammals)
+    citations: [C208, C210, C205]
     nt: DA
     effect_on_postsynaptic_drive: modulatory
+  mtnr:
+    name: melatonin receptors (mtnr1a paralogs; sleep-promoting axis)
+    citations: [C211, C212]
+    nt: null
+    effect_on_postsynaptic_drive: sleep_axis
+  ache:
+    name: acetylcholinesterase enzymatic target (NOT a receptor; AChE inhibition elevates synaptic ACh)
+    citations: [C214, C216]
+    nt: ACH
+    effect_on_postsynaptic_drive: modulatory
+  # direction vocabulary: antagonist / blocker / positive_allosteric_modulator /
+  # agonist / substrate / inhibitor / weak_* variants. GABA_A PAM entries set
+  # gaba_a_pam_phi (handled as increased inhibitory gain, NOT antagonistic block).
 
 products:
 
@@ -72,84 +111,94 @@ products:
     human:
       targets: [adenosine A1 antagonist, adenosine A2A antagonist, adenosine A2B antagonist, adenosine A3 antagonist]
       neuron_classes: [striatopallidal MSNs (A2A), hippocampal/cortical neurons (A1), wake-promoting hypothalamic & brainstem circuits]
-      citations: [C1, C2, C3, C4, C5, C6]
-      note: nonselective adenosine receptor blocker; A1 blockade raises 5-HT/DA/NA turnover (C5).
-    fly:
-      targets: [dAdoR-independent]
-      effect: null
-      citations: [C7, C179, C180]
+      citations: [C16, C17, C18, C19, C20, C21, C22]
+      note: nonselective adenosine receptor blocker.
+    fish:
+      systems: [adora]
+      effect: antagonist (zebrafish adora1a/b + adora2a are the verified homolog axis; caffeine increases larval locomotion and upregulates adora genes)
+      citations: [C8, C9, C23]
       note: >-
-        Drosophila caffeine wakefulness is NOT mediated by the single fly adenosine
-        receptor (Wu 2009); Nall 2016 shows caffeine acts via dopamine signaling.
-        We therefore model caffeine on fly D1-like DA receptors + general excitability.
+        Wei 2024 demonstrated caffeine-induced sleep-pattern disruption in larvae
+        with adora1a/b, adora2a upregulation; Maximino 2011: adenosine A2 blockade
+        induces hyperlocomotion, A1 blockade increases anxiety-related behavior.
+      population: global arousal drive (wake axis), not a single synaptic matrix
       mapping:
-        d1_like: {direction: agonist_positive_modulation, citations: [C179]}
-        para_nav: {direction: excitability_increase, citations: [C180]}
-    sim_params: {d1_like_gain: +0.20}
+        adora: {direction: antagonist, citations: [C8, C9, C23]}
+    sim_params: {adora_phi: 0.60}
 
   Claritin (Tablet):
     cid: 3957
     human:
       targets: [peripheral H1 inverse agonist (loratadine/desloratadine)]
-      neuron_classes: [peripheral sensory neurons; slight central H1 occupancy reported (C47)]
-      citations: [C44, C45, C46, C47, C48, C49]
+      neuron_classes: [peripheral sensory neurons; slight central H1 occupancy reported (C26)]
+      citations: [C41, C42, C43, C44, C45, C46]
       note: second-generation; minimal CNS penetration (P-gp substrate).
-    fly:
-      targets: [ort_histamine]
-      effect: weak antagonist (H1 is Gq-coupled; fly Ort/HisCl1 are histamine-gated channels - NOT true orthologs)
-      citations: [C144, C145, C146, C46]
-      note: >
-        Disclosed approximation: fly histamine receptors are chloride channels, not
-        H1 GPCRs. Loratadine antihistaminic action is used as a WEAK blocker signal.
+    fish:
+      systems: [hrh1]
+      effect: weak antagonist (H1 receptor hrh1 verified in zebrafish; loratadine crosses the BBB poorly)
+      citations: [C12, C26, C44]
+      note: disclosed weak-signal approximation.
+      population: wake-axis attenuation (mild drowsiness)
       mapping:
-        ort_histamine: {direction: weak_antagonist, citations: [C46, C145]}
-    sim_params: {ort_histamine_phi: 0.10}
+        hrh1: {direction: weak_antagonist, citations: [C12, C26]}
+    sim_params: {hrh1_phi: 0.10}
 
   Claritin (Gel):
     cid: 3957
     human:
       targets: [peripheral H1 inverse agonist (loratadine/desloratadine)]
-      neuron_classes: [peripheral sensory neurons; slight central H1 occupancy reported (C47)]
-      citations: [C44, C45, C46, C47, C48, C49]
-      note: same active molecule as tablet; different delivery vehicle, no neuronal difference.
-    fly:
-      targets: [ort_histamine]
-      effect: weak antagonist (approximation, see Tablet note)
-      citations: [C46, C145]
+      neuron_classes: [peripheral sensory neurons; slight central H1 occupancy reported (C26)]
+      citations: [C41, C42, C43, C44, C45, C46]
+      note: same active molecule as tablet; different delivery vehicle.
+    fish:
+      systems: [hrh1]
+      effect: weak antagonist (see Tablet note)
+      citations: [C12, C26]
+      population: wake-axis attenuation (mild)
       mapping:
-        ort_histamine: {direction: weak_antagonist, citations: [C46, C145]}
-    sim_params: {ort_histamine_phi: 0.10}
+        hrh1: {direction: weak_antagonist, citations: [C12, C26]}
+    sim_params: {hrh1_phi: 0.10}
 
   Dormiphen (Sleeping Pill):
     cid: 3100
     human:
       targets: [H1 inverse agonist (diphenhydramine), antimuscarinic, anti-alpha-adrenergic]
       neuron_classes: [tuberomammillary nucleus histaminergic neurons (H1), vestibular nuclei, cortical neurons]
-      citations: [C37, C38, C39, C40, C41, C42, C43]
+      citations: [C27, C28, C29, C30, C31, C32, C33, C34, C35]
       note: first-generation; crosses BBB readily; sedation via central H1 blockade.
-    fly:
-      targets: [ort_histamine]
-      effect: antagonist-approximation (fly histamine receptors are chloride channels)
-      citations: [C41, C145]
+    fish:
+      systems: [hrh1, machr]
+      effect: >-
+        H1 antagonist (hrh1 regulates wakefulness and orexin/hypocretin neuron
+        development in zebrafish, Sundvik 2011) + antimuscarinic (mAChR
+        antagonists reduce larvae hyperactivity triggered by cholinergic
+        stimulation, Siregar 2021). Alpha-adrenergic axis NOT mapped (no
+        verified zebrafish alpha2-adrenergic sleep/wake receptor effect).
+      citations: [C12, C5, C30]
+      population: wake-axis attenuation (sedation) + reduced cholinergic modulation
       mapping:
-        ort_histamine: {direction: antagonist, citations: [C41, C145]}
-    sim_params: {ort_histamine_phi: 0.45}
+        hrh1: {direction: antagonist, citations: [C12, C30]}
+        machr: {direction: antagonist, citations: [C5]}
+    sim_params: {hrh1_phi: 0.45, machr_phi: 0.30}
 
   Acetaminophen:
     cid: 1983
     human:
       targets: [COX-1 variant / COX-2 weak, AM404-mediated TRPV1 & CB1 (metabolite), descending serotonergic activation]
       neuron_classes: [spinal cord dorsal horn, hypothalamus (thermoregulation), descending serotonergic (raphe)]
-      citations: [C103, C104, C105, C106, C107]
-    fly:
-      targets: [5ht_receptors]
-      effect: serotonergic modulation approximation
-      citations: [C105, C139]
-      note: >
-        Fly has no COX/AM404 system verified; the only cited, conserved pathway is the
-        descending serotonergic activation (C105). Modeled as weak 5-HT gain increase.
+      citations: [C36, C37, C38, C39, C40]
+    fish:
+      systems: [htr]
+      effect: >-
+        descending serotonergic activation approximation (htr1aa/htr2a verified
+        in zebrafish larvae). COX/AM404 pathway has NO verified zebrafish
+        neuronal ortholog and is NOT mapped. Larval zebrafish APAP data:
+        no locomotor hyperactivity at sub-toxic doses (Reuter 2016).
+      citations: [C10, C38, C24]
+      note: weak serotonergic gain signal only, as disclosed.
+      population: serotonergic modulation (weak)
       mapping:
-        5ht_receptors: {direction: weak_positive_modulation, citations: [C105]}
+        htr: {direction: weak_positive_modulation, citations: [C38]}
     sim_params: {ser_gain: +0.06}
 
   Bupropion (Wellbutrin):
@@ -157,196 +206,512 @@ products:
     human:
       targets: [DAT inhibitor, NET inhibitor, nAChR noncompetitive antagonist]
       neuron_classes: [VTA dopamine neurons, locus coeruleus, mesolimbic pathway]
-      citations: [C17, C18, C19, C20, C21, C22, C23]
-    fly:
-      targets: [ddat, nachr]
-      effect: "DAT blockade + nAChR antagonism (conserved: fly DAT = fumin locus; fly nAChRs = neonicotinoid targets)"
-      citations: [C18, C19, C10, C11]
+      citations: [C47, C48, C49, C50, C51, C52, C53]
+    fish:
+      systems: [dat, nachr]
+      effect: >-
+        DAT blockade (zebrafish slc6a3 is the verified amphetamine/MPH-sensitive
+        DAT ortholog) + nAChR antagonism (neuronal chrna subunits verified).
+      citations: [C6, C4, C48]
+      population: dopaminergic gain + nicotinic partial block
       mapping:
-        ddat: {direction: antagonist, citations: [C18]}
-        nachr: {direction: antagonist, citations: [C19, C10]}
-    sim_params: {ddat_phi: 0.35, nachr_phi: 0.20, da_gain: +0.12}
+        dat: {direction: inhibitor, citations: [C6, C48]}
+        nachr: {direction: antagonist, citations: [C4]}
+    sim_params: {dat_phi: 0.35, nachr_phi: 0.20}
 
   Tobacco:
     cid: 89594
     human:
       targets: [nicotinic acetylcholine receptors (alpha4beta2, alpha7) agonist]
       neuron_classes: [VTA dopamine neurons, habenula, autonomic ganglia]
-      citations: [C8, C10, C11, C12]
-      note: listed here because fly nAChRs are the best-characterized ortholog system (C8-C12).
-    fly:
-      targets: [nachr]
-      effect: agonist (desensitizing at sustained exposure)
-      citations: [C8, C9, C10, C11, C12]
+      citations: [C54, C55, C56, C57]
+    fish:
+      systems: [nachr]
+      effect: agonist_then_desensitization (zebrafish neuronal nAChR subunits verified; nicotine increases larval locomotion at 2.5-50 uM)
+      citations: [C4, C23, C55]
+      population: excitation with desensitization at sustained exposure
       mapping:
-        nachr: {direction: agonist_then_desensitization, citations: [C8, C9, C10]}
-    sim_params: {nachr_activation_gain: +0.30}
+        nachr: {direction: agonist_then_desensitization, citations: [C4, C55]}
+    sim_params: {nachr_gain: +0.30}
 
   Tobacco Extract:
     cid: 89594
     human:
       targets: [nicotinic acetylcholine receptors agonist (plus MAO-inhibiting and other minor alkaloids not modeled)]
       neuron_classes: [VTA dopamine neurons, autonomic ganglia]
-      citations: [C8, C10, C11, C12]
+      citations: [C54, C55, C56, C57]
       note: same active molecule as Tobacco; extract-specific minor alkaloids not modeled (disclosed).
-    fly:
-      targets: [nachr]
-      effect: agonist (desensitizing at sustained exposure)
-      citations: [C8, C9, C10, C11, C12]
+    fish:
+      systems: [nachr]
+      effect: agonist_then_desensitization (see Tobacco note)
+      citations: [C4, C55]
+      population: excitation with desensitization
       mapping:
-        nachr: {direction: agonist_then_desensitization, citations: [C8, C9, C10]}
-    sim_params: {nachr_activation_gain: +0.30}
+        nachr: {direction: agonist_then_desensitization, citations: [C4, C55]}
+    sim_params: {nachr_gain: +0.30}
 
   Dimenhydrinate (Gravol):
     cid: 10660
     human:
       targets: [H1 inverse agonist (diphenhydramine component), adenosine antagonist (8-chlorotheophylline component)]
       neuron_classes: [vestibular nuclei, TMN histaminergic neurons, cortical adenosine-responsive circuits]
-      citations: [C50, C51, C52, C53, C3]
-    fly:
-      targets: [ort_histamine]
-      effect: antagonist-approximation on H1 axis; theophylline-component adenosine effect is dAdoR-independent (not mapped)
-      citations: [C50, C7]
+      citations: [C58, C59, C60, C61, C22]
+    fish:
+      systems: [hrh1, adora]
+      effect: >-
+        H1 antagonist axis (as Dormiphen) + theophylline-component adenosine
+        antagonism (probe: 8-chlorotheophylline = chlorinated theophylline;
+        zebrafish adenosine axis is the verified caffeine-sensitive pathway).
+        Adenosine component modeled at reduced occupancy (disclosed).
+      citations: [C12, C5, C8, C9]
+      population: wake-axis attenuation + mild adenosine antagonism
       mapping:
-        ort_histamine: {direction: antagonist, citations: [C50, C145]}
-    sim_params: {ort_histamine_phi: 0.40}
+        hrh1: {direction: antagonist, citations: [C12]}
+        adora: {direction: antagonist, citations: [C8, C9]}
+    sim_params: {hrh1_phi: 0.40, adora_phi: 0.15}
 
   Lidocaine:
     cid: 3676
     human:
       targets: [voltage-gated sodium channels (Nav1.7, Nav1.8 etc.) blocker]
       neuron_classes: [peripheral nociceptors, all fast-spiking neurons near application site]
-      citations: [C30, C31, C32, C33, C34, C35, C36]
-    fly:
-      targets: [para_nav]
-      effect: blocker (Para is the fly Nav ortholog; use-dependent block)
-      citations: [C149, C150, C151]
+      citations: [C62, C63, C64, C65, C66, C67, C68]
+    fish:
+      systems: [nav]
+      effect: >-
+        blocker (voltage-gated Na+ channel pharmacology is verified in
+        zebrafish: scn1lab/Dravet model mutants show use-dependent Nav-blocker
+        responses; anesthetic/TTX blockers silence spiking).
+      citations: [C7, C68]
+      population: global excitability collapse (use-dependent block)
       mapping:
-        para_nav: {direction: blocker, citations: [C149, C150]}
-    sim_params: {para_nav_phi: 0.70}
+        nav: {direction: blocker, citations: [C7]}
+    sim_params: {nav_phi: 0.70}
 
   Lithium Acetate:
     cid: 3474584
     human:
       targets: [GSK-3 inhibition (direct, IC50 ~1 mM), IP3/IMPase effects]
       neuron_classes: [cortical/limbic neurons (GSK-3 is intracellular signaling, not a synaptic receptor)]
-      citations: [C72, C73, C74, C75, C76]
+      citations: [C69, C70, C71, C72, C73]
       note: intracellular signaling target; not a synaptic receptor - no direct occupancy on g_syn.
-    fly:
-      targets: [para_nav]
-      effect: >
-        Intracellular GSK-3 homolog (shaggy) exists in fly, but it is not a synaptic
-        receptor and cannot enter the CPG/LIF g_syn formalism. Only cited fly-level
-        neuronal phenotype: lithium-responsive seizure-like hyperexcitability
-        involves para (C152). Modeled as weak excitability modulation.
-      citations: [C152, C75]
+    fish:
+      systems: [gsk3]
+      effect: >-
+        intracellular Wnt/GSK-3 axis exists in zebrafish (LiCl induces
+        thigmotaxis/anxiety and Wnt-responsive developmental changes, Nery 2014;
+        Siebel 2014). GSK-3 is NOT a synaptic receptor and cannot enter the
+        synaptic-occupancy formalism; NO verified acutely relevant synaptic
+        receptor target -> only a weak excitability modulation is modeled.
+      citations: [C15, C74, C75]
+      population: intracellular-only; weak excitability modulation (disclosed)
       mapping:
-        para_nav: {direction: weak_excitability_modulation, citations: [C152]}
-    sim_params: {para_nav_phi: 0.05}
+        gsk3: {direction: intracellular_no_synaptic_target, citations: [C15]}
+        nav: {direction: weak_excitability_modulation, citations: [C74]}
+    sim_params: {nav_phi: 0.05, gsk3_phi: 0.0}
 
   Mirtazapine:
     cid: 4205
     human:
       targets: [alpha2-adrenoceptor antagonist, 5-HT2 antagonist, 5-HT3 antagonist, H1 antagonist]
       neuron_classes: [locus coeruleus NE neurons, raphe 5-HT neurons, TMN histaminergic neurons]
-      citations: [C66, C67, C68, C69, C70, C71]
-    fly:
-      targets: [5ht_receptors]
-      effect: >
-        5-HT2/5-HT3 antagonism maps to fly 5-HT2A/2B receptors (5-HT3 has no fly
-        ionotropic ortholog). The alpha2 and H1 axes have no verifiable fly
-        synaptic-receptor ortholog and are NOT modeled.
-      citations: [C67, C70, C139, C140]
+      citations: [C76, C77, C78, C79, C80, C81]
+    fish:
+      systems: [htr, hrh1]
+      effect: >-
+        5-HT2-preferring antagonism (htr2a/htr2b verified in larval zebrafish
+        threat-circuit pharmacology; 5-HT3 ionotropic receptor exists in fish).
+        H1 axis also included (mirtazapine is a potent H1 inverse agonist in
+        humans and hrh1 is verified zebrafish wake-axis). The alpha2
+        adrenergic axis NOT mapped (no verified zebrafish alpha2 sleep/wake
+        receptor effect).
+      citations: [C10, C11, C12, C77]
+      population: serotonergic (negative) + wake-axis attenuation (mild)
       mapping:
-        5ht_receptors: {direction: antagonist_5ht2_preferring, citations: [C67, C139, C140]}
-    sim_params: {ser_gain: -0.10}
+        htr: {direction: antagonist_5ht2_preferring, citations: [C10, C11, C77]}
+        hrh1: {direction: weak_antagonist, citations: [C12]}
+    sim_params: {ser_gain: -0.10, hrh1_phi: 0.15}
 
   Weed:
     cid: 16078
     human:
       targets: [CB1 partial agonist (THC), CB2 (peripheral), TRPV1/CB1 via AM404-acetaminophen analog only if co-administered]
       neuron_classes: [hippocampal GABAergic axon terminals (CB1), cortical glutamatergic terminals, basal ganglia]
-      citations: [C84, C85, C86, C87, C88, C89]
-    fly:
-      targets: []
-      effect: null
-      citations: [C153, C154, C155]
-      note: >
-        Cannabinoid receptors are ABSENT in insects (McPartland 2001); THC cannot
-        activate G-proteins in fly tissue. CBD affects fly locomotion via 5-HT1A
-        (Candib 2024). THC component: no-op. CBD component: weak 5-HT modulation.
+      citations: [C82, C83, C84, C85, C86, C87]
+    fish:
+      systems: [cnr1]
+      effect: >-
+        CB1 partial agonist. cnr1 and cnr2 are verified in zebrafish and CB1
+        activation modulates larval locomotion; CB1 sits on GABA and
+        glutamatergic terminals, with reduced brain GABA after activation.
+        Sim effect: presynaptic release reduction (dominantly inhibitory
+        terminals) -> disinhibition.
+      citations: [C13, C14, C84]
+      population: presynaptic inhibitory release reduction (disinhibition)
       mapping:
-        5ht_receptors: {direction: weak_negative_modulation, citations: [C91]}
-    sim_params: {ser_gain: -0.04}
+        cnr1: {direction: cb1_agonist_presynaptic_gaba_release_reduction, citations: [C13, C14]}
+    sim_params: {cnr1_phi: 0.35}
 
   CBD nanodrops:
     cid: 644019
     human:
       targets: [CB1 negative allosteric modulator, TRPV1/TRPA1 agonist, 5-HT1A partial agonist]
       neuron_classes: [cortical/limbic neurons, descending serotonergic circuits]
-      citations: [C84, C90, C91]
-    fly:
-      targets: [5ht_receptors]
-      effect: >
-        CBD changes fly locomotor behavior via 5-HT1A receptors (Candib 2024);
-        5-HT1A is a verified fly receptor (C139, C140).
-      citations: [C91, C139, C140]
+      citations: [C82, C88, C89]
+    fish:
+      systems: [cnr1, htr]
+      effect: >-
+        5-HT1A-family partial agonism (htr1aa/htr1ab are verified zebrafish
+        orthologs of the 5-HT1A axis) + weak CB1 negative allosteric modulation
+        (cnr1 verified; the NAM property itself is a human-pharmacology claim
+        applied to fish at reduced weight, disclosed).
+      citations: [C10, C13, C88]
+      population: serotonergic modulation (negative) + weak CB1 modulation
       mapping:
-        5ht_receptors: {direction: partial_agonist_5ht1a, citations: [C91, C139]}
-    sim_params: {ser_gain: -0.06}
+        htr: {direction: partial_agonist_5ht1a_family, citations: [C10, C88]}
+        cnr1: {direction: weak_negative_modulator, citations: [C13]}
+    sim_params: {ser_gain: -0.06, cnr1_phi: 0.15}
 
   Vyvanse:
     cid: 11597698
     human:
       targets: [DAT substrate (reverse transport), NET substrate, VMAT2 substrate]
       neuron_classes: [VTA/nigrostriatal dopamine neurons, locus coeruleus NE neurons, cortical glutamatergic]
-      citations: [C24, C25, C26, C27, C28, C29]
-    fly:
-      targets: [ddat]
-      effect: DAT substrate/reverse-transport approximation (fly DAT = fumin locus; DA clearance loss -> hyperarousal)
-      citations: [C173, C174, C175, C132, C134]
+      citations: [C90, C91, C92, C93, C94, C95]
+    fish:
+      systems: [dat]
+      effect: DAT substrate/reverse-transport (zebrafish slc6a3 DAT is verified as the amphetamine/MPH-sensitive transporter; hyperdopamine phenotype in slc6a3 loss-of-function)
+      citations: [C6, C92, C93]
+      population: strong dopaminergic gain
       mapping:
-        ddat: {direction: substrate_reverse_transport, citations: [C173, C174, C175]}
-    sim_params: {ddat_phi: 0.65, da_gain: +0.35}
+        dat: {direction: substrate_reverse_transport, citations: [C6, C92]}
+    sim_params: {dat_phi: 0.65}
 
   Robax:
     cid: 3672
     human:
       targets: [COX-1/COX-2 inhibitor (ibuprofen), CNS depressant + Nav1.4 blocker (methocarbamol)]
       neuron_classes: [spinal cord interneurons, skeletal muscle Nav1.4, cortical (general depressant)]
-      citations: [C108, C113, C114, C115, C116, C117]
-    fly:
-      targets: [para_nav]
-      effect: methocarbamol Nav block maps to fly para channel (conserved); ibuprofen COX has no fly neuronal ortholog
-      citations: [C116, C149, C150]
+      citations: [C96, C97, C98, C99, C100, C101]
+    fish:
+      systems: [nav]
+      effect: >-
+        methocarbamol Nav-channel block maps to zebrafish voltage-gated Na+
+        channel pharmacology (scn1lab system). Ibuprofen COX has NO verified
+        zebrafish SYNAPTIC receptor ortholog and is NOT modeled (disclosed).
+      citations: [C7, C98]
+      population: moderate global excitability reduction
       mapping:
-        para_nav: {direction: blocker, citations: [C116, C150]}
-    sim_params: {para_nav_phi: 0.25}
+        nav: {direction: blocker, citations: [C7, C98]}
+    sim_params: {nav_phi: 0.25}
 
   Jungle Juice (Everything mixed):
     cid: null
     human:
       targets: [all of the above combined]
       neuron_classes: [combination]
-      citations: [C1, C13, C17, C24, C30, C37, C44, C50, C54, C60, C66, C72, C77, C84, C92, C98, C103, C108, C114, C118]
+      citations: [C16, C27, C47, C90, C62, C58, C69, C82, C76, C36, C96, C54]
       note: multi-drug co-application; interactions are additive in this model (disclosed simplification).
-    fly:
-      targets: [nachr, rdl, ort_histamine, ddat, para_nav, 5ht_receptors, d1_like]
+    fish:
+      systems: [gaba_a, nachr, machr, dat, nav, adora, htr, hrh1, cnr1, glyr]
       effect: combined non-null mappings of all products above (additive occupancy)
-      citations: [C8, C41, C18, C173, C91, C152]
+      citations: [C16, C27, C47, C90, C62, C58, C69, C82, C76, C36, C96, C54]
+      population: combination (additive occupancy)
       mapping:
-        nachr: {direction: agonist_then_desensitization, citations: [C8]}
-        ort_histamine: {direction: antagonist, citations: [C41]}
-        ddat: {direction: substrate_reverse_transport, citations: [C173, C174, C175]}
-        para_nav: {direction: blocker, citations: [C149]}
-        5ht_receptors: {direction: mixed, citations: [C91, C67]}
-        d1_like: {direction: agonist_positive_modulation, citations: [C179]}
+        hrh1: {direction: antagonist, citations: [C27, C58]}
+        machr: {direction: antagonist, citations: [C27]}
+        adora: {direction: antagonist, citations: [C16]}
+        dat: {direction: substrate_reverse_transport, citations: [C90, C47]}
+        nachr: {direction: mixed_agonist_then_desensitization_and_antagonist, citations: [C54, C47]}
+        nav: {direction: blocker, citations: [C62, C96]}
+        htr: {direction: mixed_partial_effects, citations: [C76, C36, C82]}
+        cnr1: {direction: cb1_agonist_presynaptic_gaba_release_reduction, citations: [C82]}
     sim_params:
-      nachr_activation_gain: +0.30
-      ort_histamine_phi: 0.45
-      ddat_phi: 0.65
-      para_nav_phi: 0.70
+      hrh1_phi: 0.45
+      machr_phi: 0.30
+      adora_phi: 0.60
+      dat_phi: 0.65
+      nachr_phi: 0.20
+      nachr_gain: +0.30
+      nav_phi: 0.70
       ser_gain: -0.08
-      d1_like_gain: +0.20
+      cnr1_phi: 0.35
 
+  # =====================================================================
+  # Literature-expanded neuropharmacology catalog (2026).
+  # Every entry below is grounded in the zebrafish locomotor pharmacology
+  # studies cited in citations.md (section "Expanded pharmacological catalog").
+  # =====================================================================
 
+  Pentylenetetrazol (PTZ):
+    cid: 5917 # PubChem PUG REST (data/pubchem_cids.json)
+    human:
+      targets: [GABA-A antagonist (convulsant; historical Metrazol)]
+      neuron_classes: [central inhibitory synapses -> seizure generalization]
+      citations: [C186, C187, C188]
+      note: canonical chemical convulsant historically used in humans and the standard model-organism seizure inducer.
+    fish:
+      systems: [gaba_a]
+      effect: >-
+        GABA_A antagonist; the most-studied convulsant in larval zebrafish:
+        Baraban 2005 established the larval seizure model, Afrikanova 2013
+        validated it as a locomotor-based assay (increased locomotor activity,
+        seizure-like swimming), Shaw 2022 optimized the locomotion readout.
+      citations: [C186, C187, C188]
+      population: inhibitory synapse block -> ataxic/seizure-style collapse
+      mapping:
+        gaba_a: {direction: antagonist, citations: [C186, C187]}
+    sim_params: {gaba_a_phi: 0.55}
+
+  Picrotoxin:
+    cid: 31304
+    human:
+      targets: [GABA-A chloride-channel pore blocker (noncompetitive)]
+      neuron_classes: [CNS inhibitory synapses]
+      citations: [C192, C222]
+      note: convulsant from Anamirta cocculus ('fish-berry'); noncompetitive GABA_A-gated channel antagonist.
+    fish:
+      systems: [gaba_a]
+      effect: >-
+        GABA_A-gated chloride channel blocker. Yang 2017: high-concentration
+        picrotoxin increases locomotion and thigmotaxis in 5-dpf larvae under
+        illumination.
+      citations: [C192]
+      population: inhibitory synapse block (noncompetitive)
+      mapping:
+        gaba_a: {direction: blocker, citations: [C192]}
+    sim_params: {gaba_a_phi: 0.45}
+
+  Strychnine:
+    cid: 441071
+    human:
+      targets: [glycine receptor antagonist (spinal inhibitory blockade)]
+      neuron_classes: [spinal cord and brainstem glycinergic synapses]
+      citations: [C190, C221]
+      note: classic GlyR antagonist; poisoning produces hyperexcitability and spastic reflexes via loss of glycinergic inhibition.
+    fish:
+      systems: [glyr]
+      effect: >-
+        GlyR antagonist with precise larval motor evidence: Wiggin 2014
+        (strychnine reversibly disrupts BOTH rostrocaudal AND left-right
+        coordination of fictive swimming), Granato 1996 (strychnine mimics the
+        'accordion' locomotor phenotype), Roussel 2020 (glycine is the main
+        inhibitory transmitter of the developing larval spinal cord).
+      citations: [C189, C190, C191]
+      population: glycinergic inhibitory block -> coordination collapse
+      mapping:
+        glyr: {direction: antagonist, citations: [C189, C190]}
+    sim_params: {glyr_phi: 0.60}
+
+  Diazepam:
+    cid: 3016
+    human:
+      targets: [GABA_A positive allosteric modulator (benzodiazepine site)]
+      neuron_classes: [cortical/limbic GABAergic synapses, spinal interneurons]
+      citations: [C222]
+      note: benzodiazepine anxiolytic/sedative/hypnotic.
+    fish:
+      systems: [gaba_a]
+      effect: >-
+        Positive allosteric modulation (increases postsynaptic GABA
+        sensitivity). Cao 2019: benzodiazepine binding sites on GABA_A
+        receptors contribute to diazepam-induced immobility in larvae;
+        Moradi-Afrapoli 2017: diazepam suppresses PTZ-provoked locomotor
+        activity dose-dependently; Mundy 2021: BZD GABAA PAMs in larvae.
+      citations: [C193, C194, C195, C213]
+      population: increased inhibitory gain -> sedation/immobility
+      mapping:
+        gaba_a: {direction: positive_allosteric_modulator, citations: [C193, C194]}
+    sim_params: {gaba_a_pam_phi: 0.55}
+
+  Ethanol (Alcohol):
+    cid: 702
+    human:
+      targets: [NMDA receptor antagonist (constituent), GABA_A positive modulation, general CNS depressant]
+      neuron_classes: [cortical pyramidal neurons, cerebellum (gait ataxia), brainstem]
+      citations: [C196, C222]
+      note: biphasic CNS stimulant-like at low doses / depressant at higher doses.
+    fish:
+      systems: [glut_iontropic, nachr]
+      effect: >-
+        Biphasic locomotor response documented in larval zebrafish (low-dose
+        hyperactivity, high-dose hypoactivity; Basnet 2019), bath ethanol
+        effects on larval CNS neurons (Ikeda 2013), and reduced locomotor
+        activity with altered dopamine at developmental exposure (Du 2020).
+        Modeled as NMDA-block ataxia with a small arousal component at acute
+        doses (the biphasic time-course itself is NOT simulated - disclosed);
+        the nAChR system is named only as weak positive modulation at trace
+        weight.
+      citations: [C196, C197, C198]
+      population: NMDA-driven ataxia + weak biphasic arousal
+      mapping:
+        glut_iontropic: {direction: weak_antagonist, citations: [C196, C197]}
+        nachr: {direction: weak_positive_modulation, citations: [C196]}
+    sim_params: {glut_iontropic_phi: 0.22, nachr_gain: +0.05}
+
+  Ketamine:
+    cid: 3821
+    human:
+      targets: [NMDA receptor noncompetitive antagonist (anesthetic/antidepressant)]
+      neuron_classes: [cortical pyramidal neurons, thalamocortical projections]
+      citations: [C217, C218]
+    fish:
+      systems: [glut_iontropic]
+      effect: >-
+        NMDA hypofunction axis. Riehl 2011 & Zakhary 2011: sub-anesthetic
+        ketamine elicits zebrafish behaviors qualitatively analogous to
+        mammals; subsequent larval work reports NMDA-receptor hypofunction
+        altering motor patterns. At anesthetic (high) doses locomotor
+        suppression dominates.
+      citations: [C217, C218]
+      population: excitatory (NMDA) block + mild excitability taper
+      mapping:
+        glut_iontropic: {direction: antagonist, citations: [C217, C218]}
+    sim_params: {glut_iontropic_phi: 0.35, nav_phi: 0.15}
+
+  Cocaine:
+    cid: 446220
+    human:
+      targets: [DAT/NET/5-HTT transporter blocker (psychostimulant)]
+      neuron_classes: [VTA/nigrostriatal dopamine neurons]
+      citations: [C224, C90]
+    fish:
+      systems: [dat]
+      effect: >-
+        DAT inhibitor with DISCLOSED honest zebrafish data: cocaine is taken up
+        by larvae but does NOT elicit mammal-type hyperlocomotion (Kirla 2016;\n        an imaging study localized cocaine accumulation in larval eyes, a
+        visual confound), and acute cocaine does not significantly alter adult
+        zebrafish locomotor activity (Lopez-Patino 2008). A LOW dat_phi is
+        therefore modeled to reflect the weak locomotor signature rather than
+        assuming human-like stimulation.
+      citations: [C203, C204, C224]
+      population: weak dopaminergic gain (conservative, non-stimulant-like)
+      mapping:
+        dat: {direction: inhibitor, citations: [C203, C224]}
+    sim_params: {dat_phi: 0.18}
+
+  Methylphenidate (Ritalin):
+    cid: 4158
+    human:
+      targets: [DAT inhibitor, NET inhibitor (SLC6A3 / SLC6A2 blockade)]
+      neuron_classes: [striatum (DAT), locus coeruleus (NET)]
+      citations: [C223]
+    fish:
+      systems: [dat]
+      effect: >-
+        MPH-sensitive slc6a3 axis is verified (see C6/C92). Lange 2012:
+        lphn3.1 larval hyperactivity is rescued by methylphenidate; Lange 2018:
+        dopamine-targeting drugs elicit locomotor responses conserved between
+        larval zebrafish and mammals. Modeled as sustained moderate
+        dopaminergic gain (between bupropion and amphetamine substrate).
+      citations: [C205, C206, C223]
+      population: sustained dopaminergic gain (therapeutic-range arousal)
+      mapping:
+        dat: {direction: inhibitor, citations: [C205, C223]}
+    sim_params: {dat_phi: 0.45}
+
+  Fluoxetine (Prozac):
+    cid: 3386
+    human:
+      targets: [SERT/5-HTT inhibitor (SSRI)]
+      neuron_classes: [raphe serotonergic terminal fields (forebrain, spinal)]
+      citations: [C200, C216]
+    fish:
+      systems: [sert]
+      effect: >-
+        SERT inhibition (sert / slc6a4a/4b; ~93% identity to human SLC6A4,
+        Nozari 2022). Airhart 2007: fluoxetine bath exposure alters larval
+        spontaneous-swimming ontogeny; Suryanto 2021: sedative,
+        non-monotonic larval locomotor responses across antidepressants;
+        McDonald 2017: the fish SSRI adverse-outcome pathway runs through
+        SERT. Model: acute serotonergic tone increase + small arousal
+        attenuation (high-dose hypoactivity signal disclosed).
+      citations: [C199, C200, C201, C202]
+      population: elevated serotonergic tone + mild arousal attenuation
+      mapping:
+        sert: {direction: inhibitor, citations: [C199, C200]}
+    sim_params: {sert_phi: 0.40, hrh1_phi: 0.10}
+
+  Haloperidol:
+    cid: 3559
+    human:
+      targets: [dopamine D2-family receptor antagonist (antipsychotic)]
+      neuron_classes: [striatal medium spiny neurons, mesolimbic pathway]
+      citations: [C208, C210]
+    fish:
+      systems: [d2_like]
+      effect: >-
+        D2-family antagonism. Irons 2013: dose-dependent larval locomotor
+        effects of dopaminergic agonists/antagonists (antagonists decrease
+        locomotion); Oliveri 2019: developmental haloperidol exposure alters
+        larval locomotor behavior; Lange 2018: receptor-level conservation of
+        dopaminergic locomotor effects with mammals.
+      citations: [C208, C209, C210]
+      population: dopaminergic arousal attenuation (motor suppression)
+      mapping:
+        d2_like: {direction: antagonist, citations: [C208, C210]}
+    sim_params: {d2_phi: 0.40}
+
+  Melatonin:
+    cid: 896
+    human:
+      targets: [MT1/MT2 melatonin receptor agonist (circadian sleep signal)]
+      neuron_classes: [suprachiasmatic output, sleep-promoting hypothalamic circuits]
+      citations: [C211, C212]
+    fish:
+      systems: [mtnr]
+      effect: >-
+        Sleep-promoting axis: Gandhi 2015 (exogenous melatonin increases sleep
+        and decreases larval locomotor activity during the day), Zhdanova 2001
+        (sleep-like state via melatonin receptors; zebrafish MT receptors are
+        the diurnal vertebrate orthologs of the human MT1/MT2 axis), Chiu 2013
+        (dose-dependent locomotor decrease with hypnotics including
+        melatonin). Modeled like the sleep-pressure arm of the adenosine-agonist
+        path: arousal attenuation + scaled-down net drive.
+      citations: [C211, C212, C213]
+      population: sleep-axis drive (arousal attenuation + reduced drive scale)
+      mapping:
+        mtnr: {direction: agonist, citations: [C211, C212]}
+    sim_params: {mtnr_phi: 0.50}
+
+  Donepezil (Aricept):
+    cid: 3152
+    human:
+      targets: [acetylcholinesterase inhibitor (elevates synaptic ACh)]
+      neuron_classes: [cortical cholinergic projection fields (Alzheimer therapy)]
+      citations: [C216, C215]
+    fish:
+      systems: [ache]
+      effect: >-
+        AChE inhibition elevates synaptic acetylcholine acting on both
+        muscarinic (mAChR locomotor neuromodulation, Siregar 2021 axis) and
+        nicotinic systems. Giacomini 2020: donepezil reduces zebrafish AChE
+        activity and modulates affective behavior (+ cortisol); Audira 2020:
+        chronic donepezil behavioral effects. Model as positive cholinergic
+        modulation gain.
+      citations: [C214, C215, C216]
+      population: cholinergic gain (mAChR + nAChR modulation)
+      mapping:
+        ache: {direction: inhibitor, citations: [C214, C215]}
+        machr: {direction: indirect_positive_via_ache_inhibition, citations: [C214]}
+    sim_params: {ache_phi: 0.35, machr_gain: +0.20}
+
+  Tetrodotoxin:
+    cid: 11174599
+    human:
+      targets: [voltage-gated sodium-channel pore blocker (neurotoxin)]
+      neuron_classes: [peripheral afferent/efferent axons, brainstem motor conduction]
+      citations: [C221]
+    fish:
+      systems: [nav]
+      effect: >-
+        Use-dependent Na+ conduction block. Larval zebrafish motoneuron action
+        potentials are TTX-sensitive (Buss 2003) and TTX silences the
+        developing motor network (Knogler 2010); human intoxication gives
+        brainstem/motor conduction failure (StatPearls 2023). Modeled as the
+        strongest excitability collapse in the catalog (above lidocaine).
+      citations: [C219, C220, C221]
+      population: global excitability collapse (motor block dominant)
+      mapping:
+        nav: {direction: blocker, citations: [C219, C221]}
+    sim_params: {nav_phi: 0.85}

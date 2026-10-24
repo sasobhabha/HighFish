@@ -41,12 +41,26 @@ COMPOUNDS = {
     "Naproxen": ["naproxen"],
     "Mometasone (Nasonex)": ["mometasone furoate"],
     "Ibuprofen": ["ibuprofen"],
+    # ===== expanded neuropharmacology catalog (2026) =====
+    "Pentylenetetrazol (PTZ)": ["pentylenetetrazol"],
+    "Picrotoxin": ["picrotoxin"],
+    "Strychnine": ["strychnine"],
+    "Diazepam": ["diazepam"],
+    "Ethanol (Alcohol)": ["ethanol"],
+    "Ketamine": ["ketamine"],
+    "Cocaine": ["cocaine"],
+    "Methylphenidate (Ritalin)": ["methylphenidate"],
+    "Fluoxetine (Prozac)": ["fluoxetine"],
+    "Haloperidol": ["haloperidol"],
+    "Melatonin": ["melatonin"],
+    "Donepezil (Aricept)": ["donepezil"],
+    "Tetrodotoxin": ["tetrodotoxin"],
 }
 
 
 def cid_for_name(name: str):
     url = f"{BASE}/{urllib.parse.quote(name)}/cids/JSON"
-    req = urllib.request.Request(url, headers={"User-Agent": "HighFly-research/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "HighFish-research/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
             data = json.loads(r.read())
@@ -61,7 +75,7 @@ def props_for_cid(cid: int):
         "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/"
         f"{cid}/property/MolecularFormula,MolecularWeight,CanonicalSMILES,Title/JSON"
     )
-    req = urllib.request.Request(url, headers={"User-Agent": "HighFly-research/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "HighFish-research/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
             data = json.loads(r.read())
