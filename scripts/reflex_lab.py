@@ -16,6 +16,7 @@ not clinical measurements; the chart says so explicitly.
 """
 import os
 import sys
+import numpy as np
 from dataclasses import replace
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -59,6 +60,7 @@ def _record_exam_gif(pipeline, tap_jid, tap_step, out_name, n_steps):
     import imageio
     os.makedirs(SNAP_DIR, exist_ok=True)
     out_path = os.path.join(SNAP_DIR, out_name)
+    _intent_snapshot(pipeline)
     b = pipeline.body
     renderer = mujoco.Renderer(b.mj_model, 480, 640)
     frames = []
@@ -142,14 +144,15 @@ def _intent_snapshot(pipeline):
 def _knee_tap(drug, dose):
     """Runs a standing trial; taps the left patellar tendon mid-trial.
 
-    The tap is a 2.5 rad/s knee-stretch impulse (tendon tap). The measured
-    'reflex' is the stretch-hold response of the tone-scaled quadriceps
-    servo: swing amplitude, time-to-peak, and recovery half-time.
+    The tap is a fixed passive knee stretch (tendon tap ~0.15 rad) whose
+    recovery is driven by the tone-scaled quadriceps servo: strong muscle
+    tone pulls the leg back briskly, weak tone droops (areflexia).
     """
     p = HumanPipelineSim(drug_name=drug, dose=dose, harness=True)
     b = p.body
     jid = mujoco_name2id(b, "left_knee")
     qadr = b.mj_model.jnt_qposadr[jid]
+    _intent_snapshot(p)   # warm the drug state once (loop refreshes only)
 
     dur, tap_t = 2.6, 0.8
     n = int(dur / PHYSICS_DT)
@@ -163,12 +166,17 @@ def _knee_tap(drug, dose):
         if i % 10 == 0:                       # drug tone, 50 Hz like run()
             p.neural.step()
             intent = replace(
-                _intent_snapshot(p), mode="stand", freeze=True,
+                _intent_now(p), mode="stand", freeze=True,
                 forward_drive=0.0)
         pl, pr = p.cpg.step(PHYSICS_DT, intent)
         targets = p.kin.compute_joint_targets(PHYSICS_DT, pl, pr, intent)
         if abs(t - tap_t) < PHYSICS_DT / 2:   # the tap itself
+            # tone-scaled quadriceps strength for the reflex response
+            tone_now = float(np.clip(intent.motor_tone, 0.05, 1.0))
+            b.kp_scale = {"left_knee": tone_now, "right_knee": tone_now}
+            b.apply_gain_scales()
             b.mj_data.qvel[b.mj_model.jnt_dofadr[jid]] += 2.5
+            b.mj_data.qpos[qadr] += 0.15
         b.step(targets)
         times.append(t)
         angles.append(float(b.mj_data.qpos[qadr]))
@@ -180,15 +188,19 @@ def _knee_tap(drug, dose):
     post_t = times[i_tap:]
     devs = [a - pre for a in post]
     peak = max(devs) if devs else 0.0
-    t_peak = post_t[int(devs.index(peak))] if peak > 0.02 else None
-    half_dev = peak / 2.0
-    t_half = None
-    if peak > 0.02:
+    # recovery fraction 0.5 s after the tap: how much of the stretch the
+    # quadriceps servo has pulled back (1.0 = full return).
+    rec_frac = 0.0
+    if peak > 0.01:
+        i_rec = min(len(devs) - 1, int(0.5 / PHYSICS_DT))
+        rec_frac = max(0.0, 1.0 - abs(devs[i_rec]) / peak if peak > 0 else 0.0)
+        # time to 50% recovery
+        half_dev = peak / 2.0
         for d, tt in zip(devs, post_t):
             if d <= half_dev:
                 t_half = tt - post_t[0]
                 break
-    return {"peak_dev": peak, "t_peak": t_peak, "t_half": t_half,
+    return {"peak_dev": peak, "t_half": t_half, "rec_frac": rec_frac,
             "trace": [a - pre for a in post[::12]],
             "released": b.actuators_released}
 
@@ -200,16 +212,16 @@ def mujoco_name2id(body, joint):
 
 def _rate_tap(patient, control):
     """Clinical grade for a tap result vs the session's vehicle control."""
-    if control["peak_dev"] <= 0.02:
-        return "uninterpretable (control tap failed)"
-    ratio = patient["peak_dev"] / control["peak_dev"]
     if patient["released"]:
         return "ABSENT (flaccid -- no reflex arc response)"
-    if ratio > 1.35:
+    if control["rec_frac"] <= 0.05:
+        return "uninterpretable (control tap failed)"
+    ratio = patient["rec_frac"] / control["rec_frac"]
+    if ratio > 1.25:
         return "BRISK / hyperreflexia"
-    if ratio > 0.75:
+    if ratio > 0.85:
         return "NORMAL"
-    if ratio > 0.35:
+    if ratio > 0.45:
         return "SLUGGISH / hyporeflexia"
     return "ABSENT / areflexia"
 
@@ -229,14 +241,12 @@ def run_tap(patient, dose, control):
     print(f"  post-tap swing : {_spark(res['trace'])}")
     print(f"  peak swing     : {res['peak_dev']:.2f} rad"
           f"   (healthy ~{NORM['tap_peak_dev_rad']:.2f})")
-    if res["t_peak"] is not None:
-        print(f"  time-to-peak   : {res['t_peak'] * 1000:.0f} ms")
-    print(f"  recovery 1/2   : {res['t_half'] * 1000:.0f} ms"
-          if res["t_half"] is not None else "  recovery       : none within window")
+    print(f"  recovery       : {res['rec_frac'] * 100:.0f}% returned@0.5s"
+          + (f", 1/2-time {res['t_half'] * 1000:.0f} ms" if res["t_half"] is not None
+             else ""))
     _open_visual(gif)
-    print(f"  vehicle control: {control['peak_dev']:.2f} rad swing"
-          f"  -> amplitude ratio "
-          f"{(res['peak_dev'] / max(0.02, control['peak_dev'])):.2f}")
+    print(f"  vehicle control: {control['rec_frac'] * 100:.0f}% returned@0.5s"
+          f"  -> recovery ratio {res['rec_frac'] / max(0.05, control['rec_frac']):.2f}")
     print(f"  interpretation : {grade}")
     return res, grade
 

@@ -4,6 +4,7 @@ __pycache__/
 .DS_Store
 out/
 results/
+*.docx
 MUJOCO_LOG.TXT
 freebuff-chat-*.md
 Drosophila_on_Drugs.pdf

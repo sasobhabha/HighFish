@@ -6,8 +6,7 @@ Generates the comprehensive Manuscript Authoring Template DOCX containing:
 1. Exact Title: Explaining How Drugs Affect the Muscular Control of Homo Sapiens using the Zebrafish Connectome
 2. Exact Subtitle: Shashwath Manjunath
 3. ALL Equations: All 16 mathematical equations embedded as individual, cleanly cropped LaTeX PNGs.
-4. ALL Tables: All 5 empirical data tables embedded directly into their respective sections:
-   - Table 1: Cross-Species Molecular Target Homology & Receptor Binding Affinities (All 18 Conditions, Complete Data, Zero Ellipses)
+4. ALL Tables: All 5 empirical data tables embedded directly into their respective sections:    - Table 1: Cross-Species Molecular Target Homology & Receptor Binding Affinities (All 31 Conditions, Complete Data, Zero Ellipses)
    - Table 2: Normal Human Leg Joint Angles During a Step (David A. Winter Clinical Benchmark vs. 3D Model, 0% to 100% Gait Cycle)
    - Table 3: Master Empirical Locomotion Matrix across All 18 Pharmacological Conditions (Zebrafish Hindbrain Readout vs. Humanoid Biped, Zero Ellipses)
    - Table 4: Average Walking Speed and Muscle Strength Grouped by Drug Category (Class Statistics & Effect Sizes)
@@ -80,7 +79,7 @@ def format_table_header(row, titles, widths, bg_hex="0f172a"):
 
 
 # =========================================================================
-# EXHAUSTIVE, COMPLETE MOLECULAR HOMOLOGY DATA ACROSS ALL 18 CONDITIONS
+# EXHAUSTIVE, COMPLETE MOLECULAR HOMOLOGY DATA ACROSS ALL 31 CONDITIONS
 # (Zero ellipses, complete gene symbols, binding affinities, and tissues)
 # Zebrafish orthologs are the verified Danio rerio homologs documented in
 # citations.md (Fish1 connectome + published larval pharmacology studies).
@@ -257,6 +256,136 @@ COMPLETE_MOLECULAR_HOMOLOGY = [
         "tissue": "Spinal cord intermediate gray matter, anterior horn alpha motor neurons, and peripheral soft tissue"
     },
     {
+        "compound": "Pentylenetetrazol (PTZ)",
+        "cid": "5917",
+        "human_target": "GABRA1/GABRA2 (GABA-A receptor, convulsant antagonism site)",
+        "fish_homolog": "gabrb2/gabra1 homologs (Baraban 2005 larval seizure model; Afrikanova 2013)",
+        "mechanism": "Noncompetitive GABA-A channel antagonism generalizing inhibitory-synapse failure into seizure locomotion",
+        "affinity": "300 µM (IC50)",
+        "hill_n": "1.0",
+        "tissue": "Cortical pyramidal neurons, hippocampal dentate gyrus, thalamic relay nuclei, and spinal inhibitory pools"
+    },
+    {
+        "compound": "Picrotoxin",
+        "cid": "31304",
+        "human_target": "GABRA1/GABRB2 (GABA-A chloride-channel pore, TBPS site)",
+        "fish_homolog": "gabrb2 subunit pore homolog (Yang 2017 larval locomotion/thigmotaxis)",
+        "mechanism": "Noncompetitive blockade of the GABA-A gated chloride pore, disinhibiting motor circuits",
+        "affinity": "0.5 µM",
+        "hill_n": "1.0",
+        "tissue": "CNS inhibitory synapses of cortex, hippocampus, cerebellum, and spinal interneuron pools"
+    },
+    {
+        "compound": "Strychnine",
+        "cid": "441071",
+        "human_target": "GLRA1/GLRB (Glycine receptor chloride channel)",
+        "fish_homolog": "glra1/glyr subunit homologs (Wiggin 2014, Roussel 2020; larval spinal glycine inhibition)",
+        "mechanism": "Competitive glycine receptor antagonist removing spinal reciprocal inhibitory braking",
+        "affinity": "0.11 µM",
+        "hill_n": "1.0",
+        "tissue": "Spinal cord ventral horn interneurons, brainstem reticular formation, and motor reflex arc circuits"
+    },
+    {
+        "compound": "Diazepam",
+        "cid": "3016",
+        "human_target": "GABRA1/GABRA2 (benzodiazepine positive-allosteric site)",
+        "fish_homolog": "gabrb2/gabrd benzodiazepine-site homologs (Cao 2019; Moradi-Afrapoli 2017)",
+        "mechanism": "Positive allosteric modulation of GABA-A receptors potentiating inhibitory postsynaptic currents",
+        "affinity": "0.02 µM",
+        "hill_n": "1.0",
+        "tissue": "Limbic cortical and amygdala GABAergic synapses, sedation nuclei, and spinal interneurons"
+    },
+    {
+        "compound": "Ethanol (Alcohol)",
+        "cid": "702",
+        "human_target": "GRIN1/GRIN2A (NMDA) & GABRA1 (allosteric; general depressant)",
+        "fish_homolog": "grin1a/b NMDA homologs + chrn homologs at trace weight (Basnet 2019, Ikeda 2013)",
+        "mechanism": "Biphasic NMDA-glu receptor antagonism with GABA-A positive modulation driving dose-dependent ataxia",
+        "affinity": "17.0 mM",
+        "hill_n": "1.0",
+        "tissue": "Neocortical pyramidal neurons, cerebellar Purkinje/ granule cells, and brainstem vestibular nuclei"
+    },
+    {
+        "compound": "Ketamine",
+        "cid": "3821",
+        "human_target": "GRIN1/GRIN2B (NMDA receptor, PCP-site open-channel block)",
+        "fish_homolog": "grin1a/grin2b NMDA hypofunction homologs (Riehl 2011, Zakhary 2011)",
+        "mechanism": "Noncompetitive NMDA receptor open-channel blockade at use-dependent anesthetic doses",
+        "affinity": "2.0 µM",
+        "hill_n": "1.0",
+        "tissue": "Cortical layer-V pyramidal neurons, thalamocortical projection circuits, and brainstem arousal centers"
+    },
+    {
+        "compound": "Cocaine",
+        "cid": "446220",
+        "human_target": "SLC6A3 (DAT), SLC6A2 (NET), SLC6A4 (SERT) transporters",
+        "fish_homolog": "slc6a3 DAT homolog (weak larval signature disclosed: Kirla 2016, Lopez-Patino 2008)",
+        "mechanism": "Competitive monoamine transporter blockade elevating synaptic dopamine, norepinephrine, serotonin",
+        "affinity": "0.4 µM",
+        "hill_n": "1.0",
+        "tissue": "Ventral tegmental area, nigrostriatal dopamine terminals, and nucleus accumbens medium spiny neurons"
+    },
+    {
+        "compound": "Methylphenidate (Ritalin)",
+        "cid": "4158",
+        "human_target": "SLC6A3 (DAT), SLC6A2 (NET) reuptake transporters",
+        "fish_homolog": "slc6a3 DAT homolog, MPH-sensitive (Lange 2012 lphn3.1 rescue; Lange 2018)",
+        "mechanism": "Competitive DAT/NET blockade producing sustained synaptic dopamine elevation within therapeutic range",
+        "affinity": "0.1 µM",
+        "hill_n": "1.0",
+        "tissue": "Striatal medium spiny neurons, prefrontal cortex dopamine terminals, and locus coeruleus projections"
+    },
+    {
+        "compound": "Fluoxetine (Prozac)",
+        "cid": "3386",
+        "human_target": "SLC6A4 (SERT/5-HTT serotonin transporter)",
+        "fish_homolog": "slc6a4a/b SERT homologs (~93% identity to human SLC6A4; Nozari 2022, Airhart 2007)",
+        "mechanism": "Selective serotonin reuptake inhibition raising extracellular serotonin tone acutely",
+        "affinity": "0.0014 µM",
+        "hill_n": "1.0",
+        "tissue": "Dorsal raphe terminal fields in hippocampus, cortex, spinal cord, and serotonergic hindbrain-modulating circuits"
+    },
+    {
+        "compound": "Haloperidol",
+        "cid": "3559",
+        "human_target": "DRD2/DRD3/DRD4 (dopamine D2-family receptors)",
+        "fish_homolog": "drd2b/drd3 D2-family homologs (Irons 2013; Oliveri 2019 larval exposure)",
+        "mechanism": "Competitive D2-family receptor antagonism suppressing dopaminergic locomotor arousal",
+        "affinity": "0.001 µM",
+        "hill_n": "1.0",
+        "tissue": "Striatal medium spiny neurons, mesolimbic pathway, and substantia nigra pars reticulata"
+    },
+    {
+        "compound": "Melatonin",
+        "cid": "896",
+        "human_target": "MTNR1A/MTNR1B (MT1/MT2 GPCR, circadian sleep signal)",
+        "fish_homolog": "mtnr1aa/mtnr1bb diurnal-vertebrate orthologs (Zhdanova 2001; Gandhi 2015)",
+        "mechanism": "MT1/MT2 receptor agonism promoting sleep-state transition and attenuating arousal drive",
+        "affinity": "0.02 nM",
+        "hill_n": "1.0",
+        "tissue": "Suprachiasmatic nucleus, pineal output circuits, and hypothalamic sleep-promoting nuclei"
+    },
+    {
+        "compound": "Donepezil (Aricept)",
+        "cid": "3152",
+        "human_target": "ACHE (acetylcholinesterase, synaptic ACh elevation)",
+        "fish_homolog": "ache homolog (Giacomini 2020 zebrafish AChE inhibition; Audira 2020)",
+        "mechanism": "Noncompetitive acetylcholinesterase inhibition raising synaptic acetylcholine at mAChRs and nAChRs",
+        "affinity": "0.015 µM",
+        "hill_n": "1.0",
+        "tissue": "Cortical and hippocampal cholinergic projection fields, basal forebrain nuclei, and neuromuscular junctions"
+    },
+    {
+        "compound": "Tetrodotoxin",
+        "cid": "11174599",
+        "human_target": "SCN8A/SCN2A (voltage-gated sodium channels, pore site 1)",
+        "fish_homolog": "scn1lab Nav homolog (TTX-sensitive motoneuron APs: Buss 2003; Knogler 2010)",
+        "mechanism": "Extracellular pore-site-1 sodium-channel blocker silencing all action-potential conduction",
+        "affinity": "5.0 nM",
+        "hill_n": "1.0",
+        "tissue": "Peripheral motor and afferent axons, brainstem motor conduction pathways, and alpha-motor neuron terminals"
+    },
+    {
         "compound": "Jungle Juice (Everything mixed)",
         "cid": "Mixture",
         "human_target": "Broad concurrent disruption (Nav1.1/1.2, HRH1, DAT, NET, ADORA1/2A, CB1, nAChRs)",
@@ -431,29 +560,29 @@ def build_template_document():
     # Abstract Template
     # =============================================================
     add_h1("Abstract")
-    add_guide_banner("Compose a rigorous, structured 250-word abstract synthesizing the research problem, methodology, findings, and clinical impact.")
-    add_bullet_guideline("Context & Motivation", "State the core problem: predicting how pharmacological compounds alter human muscular control and gait without relying on black-box heuristics or invasive live human trials.")
-    add_bullet_guideline("Vertebrate Connectome Substrate", "Describe the dense electron-microscopy connectome of the larval zebrafish (Danio rerio; Fish1, Petkova et al. 2025), with excitatory/inhibitory-resolved synapses and a hindbrain reticulospinal-like readout pool, simulated as a large-scale firing-rate network.")
-    add_bullet_guideline("Translation Rationale", "Explain the mapping premise: conserved vertebrate hindbrain locomotor circuitry (reticulospinal drive, commissural reciprocal inhibition, voltage-gated Na+ conduction) lets the fish network's drug perturbations be read out as human motor-intent variables, avoiding the masking artifacts of armored invertebrate body plans.")
-    add_bullet_guideline("Anthropomorphic Translation", "Detail the ZebrafishReadout engine and 12-DOF reciprocal bipedal Central Pattern Generator (CPG) with active Body-Weight Support (BWS) in MuJoCo 3D physics.")
-    add_bullet_guideline("Key Findings", "Summarize performance across 18 tested conditions: complete flaccid arrest under Lidocaine (0.00 m/s), hyper-cadence under stimulants, sluggish stepping under sedatives, ataxic stumbling under THC vs. preserved gait under CBD, and non-linear toxicological collapse.")
-    add_bullet_guideline("Clinical Significance", "Highlight how this framework bridges molecular pharmacology with clinical kinesiology, providing an in silico platform for safety pharmacology.")
+    add_guide_banner("Write a short (~250 word) abstract: in one sentence say the problem, then how you used the fish-brain wiring map, then the headline result, then why anyone should care. Keep it readable on first pass; the jargon lives in the sections below.")
+    add_bullet_guideline("Context & Motivation", "Say the question in plain words: can a computer predict how a drug messes with walking and balance WITHOUT testing on real people? Answer: yes, by simulating a small fish brain wired to a human body.")
+    add_bullet_guideline("Vertebrate Connectome Substrate", "Describe the 'brain wiring map' (connectome) of a baby zebrafish: every single connection recorded from electron-microscope images, each labeled 'speed up' (excitatory) or 'slow down' (inhibitory). Fish brain: Petkova et al. 2025. Define connectome the first time you use it.")
+    add_bullet_guideline("Translation Rationale", "Explain the bet we make: the brainstem circuits that make a fish swim and a human walk are evolutionary cousins, so a drug that scrambles the fish circuits should scramble our walking the same way. Name the shared parts in parentheses (brainstem 'go' tract, left-right leg coordination, nerve signal conduction).")
+    add_bullet_guideline("Anthropomorphic Translation", "Explain the pipeline in one breath: the fish brain computes five numbers (how fast, how strong, how upright, how coordinated, what rhythm); those numbers drive a 3-D human dummy (MuJoCo physics) wearing an overhead safety harness (BWS) that catches falls while still letting knees buckle. CPG = the spinal stepping rhythm; define it here.")
+    add_bullet_guideline("Key Findings", "Give the results someone could repeat at a dinner table: lidocaine makes the whole body go limp (no movement at all), stimulants speed walking up, sedatives slow it down, THC makes it stagger while CBD walks fine, and mixing everything at once is catastrophic. Pull the actual speeds from Table 3.")
+    add_bullet_guideline("Clinical Significance", "Say why it matters: this is a stand-in for drug-safety testing you could never do on students. Then immediately say what this is NOT (no real patients, no lab measurements) — honesty is part of the pitch.")
 
     # =============================================================
     # Section 1: Background & The Zebrafish Connectome Substrate
     # =============================================================
     add_h1("Section 1: Background & The Zebrafish Connectome Substrate")
-    add_guide_banner("Establish the evolutionary, molecular, and neuroanatomical foundation of the larval zebrafish connectome and explain the simulation substrate.")
+    add_guide_banner("Before any details: give the reader a picture of what a larval zebrafish IS (a transparent 5-day-old fish the size of an eyelash), and why its fully mapped brain is a fair stand-in for the brain systems drugs actually hit.")
 
     add_h2("1.1 Cross-Phylum Homology & Neurotransmitter Conservation")
-    add_bullet_guideline("Evolutionary Conservation", "Explain how vertebrate neurotransmitter systems are conserved between fish and mammals (dopamine, serotonin, norepinephrine, acetylcholine, GABA, glycine, adenosine, and histamine).")
-    add_bullet_guideline("Target Protein Mapping", "Reference Table 1 below to establish the genetic and structural correspondence between human target proteins (e.g., SCN1A, CHRNA2/7, ADORA1/2A, CNR1) and zebrafish orthologs (e.g., scn1lab, chrna4/chrna7, adora1a/adora2a, cnr1) across all 18 tested drug conditions.")
+    add_bullet_guideline("Evolutionary Conservation", "Explain that our brain chemistry toolkit is 400+ million years old: dopamine (reward/movement), serotonin (mood), acetylcholine (muscle turn-on), GABA and glycine ('calm-down' chemicals), adenosine ('sleep pressure'), and histamine ('stay awake') do the same jobs in fish and in people. Introduce each with its one-phrase job.")
+    add_bullet_guideline("Target Protein Mapping", "Walk the reader through ONE row of Table 1 out loud before they scan the rest: caffeine blocks the human 'sleepiness' receptor ADORA1/2A, and the fish's copy of that same gene is adora1a/adora2a - same lock, different species, fish name in lowercase. State up front that Table 1 covers all 31 conditions (30 products + vehicle) including the 13 research compounds recently added (PTZ, strychnine, diazepam, TTX, ketamine, cocaine, and friends).")
 
-    # INSERT TABLE 1: Molecular Target Homology (COMPLETE - All 18 conditions, zero ellipses)
+    # INSERT TABLE 1: Molecular Target Homology (COMPLETE - All 31 conditions, zero ellipses)
     add_table_heading(
         "1",
-        "Cross-Species Molecular Target Homology & Receptor Binding Affinities across All 18 Conditions",
-        "Complete genetic, receptor, and biophysical correspondence between human drug target proteins and verified zebrafish orthologs across all 18 tested conditions. Binding affinities (Kd) and Hill coefficients govern receptor occupancy across species with full, unabbreviated descriptions."
+        "Cross-Species Molecular Target Homology & Receptor Binding Affinities across All 31 Conditions",
+        "Complete genetic, receptor, and biophysical correspondence between human drug target proteins and verified zebrafish orthologs across all 31 tested conditions (30 products plus vehicle). Binding affinities (Kd) and Hill coefficients govern receptor occupancy across species with full, unabbreviated descriptions."
     )
 
     t1_hom = doc.add_table(rows=len(COMPLETE_MOLECULAR_HOMOLOGY) + 1, cols=8)
@@ -489,64 +618,64 @@ def build_template_document():
             set_cell_margins(cell, top=45, bottom=45, left=45, right=45)
 
     add_h2("1.2 Whole-Brain Excitatory/Inhibitory Connectome (Petkova et al. 2025)")
-    add_bullet_guideline("Network Scale", "Describe the dense serial-section electron-microscopy volume of the larval zebrafish brain, with every chemical synapse classified as excitatory (vglut2a-type) or inhibitory (gad1b-type).")
-    add_bullet_guideline("Hindbrain Readout Bottleneck", "Explain how the hindbrain reticulospinal-like readout pool funnels cephalic sensorimotor intent down toward spinal motor execution centers, mirroring the human pontomedullary reticulospinal tract.")
-    add_bullet_guideline("Biophysical Dynamics", "Define the large-scale firing-rate network equations (Equations 1 and 2), specifying the rate time constant (tau_r), excitatory/inhibitory weight matrices (W_E, W_I), and synaptic state decay (tau_s).")
+    add_bullet_guideline("Network Scale", "Give the wow-fact first: scientists sliced the baby fish brain tissue paper-thin, photographed every slice in an electron microscope, and marked every single connection. Then explain the labels: vglut2a connections say 'go', gad1b connections say 'stop'.")
+    add_bullet_guideline("Hindbrain Readout Bottleneck", "Explain the funnel: whatever the fish 'decides' squeezes through one small crowd of hindbrain cells (the readout pool) on its way to the body - the same bottleneck our own brainstem uses to tell the spine 'walk now'. This funnel is what our simulation actually reads.")
+    add_bullet_guideline("Biophysical Dynamics", "Translate Equations 1-2 term by term: each cell's activity rises when its excitatory friends fire and falls when its inhibitory friends fire, then relaxes back to idle (tau_r is simply 'how fast it relaxes'). No calculus required to follow the sentence.")
 
     add_pure_equation_image("eq01_rate_network_dynamics.png", "Equation 1 | E/I-Resolved Firing-Rate Network Dynamics:")
     add_pure_equation_image("eq02_firing_rate_transfer.png", "Equation 2 | Firing-Rate Transfer Function & Synaptic State Decay:")
 
     add_h2("1.3 Receptor Kinetics & Hill-Langmuir Binding")
-    add_bullet_guideline("Receptor Occupancy", "Explain how drug concentration [D] and dissociation constant (K_d) determine fractional occupancy theta(D) with Hill cooperativity n (Equation 3).")
-    add_bullet_guideline("Conductance Scaling", "Formulate how receptor occupancy modulates synaptic conductances (g_syn) and blocks voltage-gated sodium channels (Equation 4).")
+    add_bullet_guideline("Receptor Occupancy", "Do the lock-and-key explanation: receptors are locks, drug molecules are keys, and Kd is the concentration that fills half the locks - a SMALL Kd means the drug is potent at tiny doses. Equation 3 is that curve.")
+    add_bullet_guideline("Conductance Scaling", "Explain what occupying a lock actually does: it changes how easily the next brain cell 'hears' the signal (Equation 4). Then the cruder drugs: lidocaine and TTX skip the lock entirely and jam the sodium channels - the nerve's copper wire - so no message travels at all.")
 
     add_pure_equation_image("eq03_hill_receptor_binding.png", "Equation 3 | Hill-Langmuir Cooperative Receptor Binding:")
     add_pure_equation_image("eq04_conductance_scaling.png", "Equation 4 | Pharmacological Conductance & Na_v Channel Blockade Scaling:")
 
     add_h2("1.4 Hindbrain Readout Pool & Coordination Index")
-    add_bullet_guideline("Readout Pool Averaging", "Formulate the population firing rate of the hindbrain readout pool (R_RO) and its lateral asymmetry (Equation 5), the direct analog of descending reticulospinal drive.")
-    add_bullet_guideline("Reciprocal Inhibition Collapse", "Formulate how GABAergic (and glycinergic) block occupancy degrades left-right reciprocal symmetry, generating the bipedal coordination index C_biped (Equation 6).")
+    add_bullet_guideline("Readout Pool Averaging", "Explain Equation 5 in two numbers: the pool's average activity = 'how badly does the body want to go', and its left-minus-right difference = 'steer'. Wheels-off simple.")
+    add_bullet_guideline("Reciprocal Inhibition Collapse", "Explain Equation 6 as a tug-of-war: each leg's 'go' signal is the other leg's 'stop' signal (via GABA/glycine cross-wiring). Block the stop signal and the coordination score C_biped sags from 1.00 toward chaos - that sag IS staggering.")
 
     add_pure_equation_image("eq05_hindbrain_readout.png", "Equation 5 | Hindbrain Readout Pool Rate & Lateral Asymmetry:")
     add_pure_equation_image("eq06_gaba_coordination_decay.png", "Equation 6 | GABAergic Block-Induced Coordination Decay (C_biped):")
 
     add_h2("1.5 Modeling Limitations of the Zebrafish Substrate")
-    add_bullet_guideline("Anatomical Scale Mismatch", "Acknowledge that the larval fish brain (~100k segmented cells in dense detail) is orders of magnitude smaller than the human CNS; complex cortical motor planning is therefore abstracted into descending reward/stimulus weights.")
-    add_bullet_guideline("Gait Plan Divergence", "Document that fish locomotion is axial swim-undulation while the output body performs bipedal stepping; the translation is applied at the level of descending intent variables (drive, tone, coordination, cadence), not muscle-by-muscle forces.")
-    add_bullet_guideline("Sensory-Loop Snapshots", "Note that looming/prey visual stimuli enter the network as external drives; intrinsic retinal and vestibular feedback loops under drug challenge remain outside the current substrate.")
+    add_bullet_guideline("Anatomical Scale Mismatch", "Say it straight: a fish brain is about 100,000 cells against your ~86 billion. We are NOT simulating 'you'; we compress planning into a few high-level numbers. Discuss which drug behaviors survive that shortcut (staggering, freezing) and which cannot (mood, focus).")
+    add_bullet_guideline("Gait Plan Divergence", "Say it straight: fish wiggle to swim, our model walks. The drug's effect transfers as INTENT (go faster / go limp / lose coordination), not muscle-by-muscle mimicry. Give one example sentence of what that means for interpretation.")
+    add_bullet_guideline("Sensory-Loop Snapshots", "Say it straight: fake predator/prey sightings are injected as signals; no real eyes and no inner-ear balance loop. Discuss how a real vestibular system might change the fall results.")
 
     # =============================================================
     # Section 2: The Anthropomorphic Humanoid Redesign
     # =============================================================
     add_h1("Section 2: The Anthropomorphic Humanoid Redesign")
-    add_guide_banner("Detail the engineering translation from zebrafish hindbrain readout activity to a 2-legged humanoid biped in 3D physics.")
+    add_guide_banner("Explain the engineering leap in plain words first: the fish brain's five output numbers now steer a 71-kg two-legged 3-D body. Everything in this section answers: how does a fish signal make a human foot step?")
 
     add_h2("2.1 Cross-Species Functional Mapping")
-    add_bullet_guideline("Locomotor Initiation", "Map the fish hindbrain reticulospinal-like readout pool to the human Mesencephalic Locomotor Region (MLR) and reticulospinal tract.")
-    add_bullet_guideline("Postural Braking", "Map lateralized hindbrain/tectal sensory asymmetries (prey-tracking vs. looming escape) to human yaw steering and stopping pause circuits.")
-    add_bullet_guideline("Interlimb Coordination", "Map spinal commissural interneurons (GABA_A/glycine reciprocal inhibition) to human lumbar commissural interneurons — collapsed under GABAergic block into ataxia.")
-    add_bullet_guideline("Motor Tone Regulation", "Map zebrafish voltage-gated sodium channel (scn1lab/Nav1.1) availability to human axonal Nav1 channel conduction and muscle force ceilings.")
+    add_bullet_guideline("Locomotor Initiation", "Explain the correspondence one time, cleanly: the fish's hindbrain 'go' pool plays the role of the human brainstem switch that starts walking (the MLR + reticulospinal tract). Same job, different animal.")
+    add_bullet_guideline("Postural Braking", "Explain the steering spare part: fish aim at prey and flee predators, and that left/right difference becomes the humanoid's turn-and-stop behavior.")
+    add_bullet_guideline("Interlimb Coordination", "Explain the crossing wires: nerve fibers jump the midline and tell one leg 'go' while the other 'stops', using the same GABA/glycine chemistry the drugs hit. When blocked, the two-leg teamwork dies and the walk staggers; define 'ataxia' here once, in a parenthesis.")
+    add_bullet_guideline("Motor Tone Regulation", "Define 'tone' in one line: how hard your muscles clench to hold you up. The fish sodium-channel gene (scn1lab) plays the role of human nerve conduction; jam it and the strength ceiling is zero - the body goes limp.")
 
     add_h2("2.2 The ZebrafishReadout Translation Engine")
-    add_bullet_guideline("Decoding Architecture", "Detail the mathematical pipeline converting raw hindbrain readout firing rates into human motor intent tuple (D_fwd, T_motor, P_post, nu, L).")
-    add_bullet_guideline("Drive, Tone, and Posture", "Formulate forward drive (Equation 7), motor tone (Equation 8), and anti-gravity postural tone (Equation 9).")
+    add_bullet_guideline("Decoding Architecture", "Introduce the five numbers with a job title each: forward drive (how fast), motor tone (how strong), posture height (how upright), coordination (how synchronized), cadence (what rhythm). Everything downstream is these five knobs.")
+    add_bullet_guideline("Drive, Tone, and Posture", "Give the plain-English reading above Equations 7-9: Equation 7 = gas pedal, Equation 8 = muscle firmness, Equation 9 = anti-gravity leg stiffness that keeps you standing instead of buckling. One clause each; the math below carries the precision.")
 
     add_pure_equation_image("eq07_forward_locomotor_drive.png", "Equation 7 | Hindbrain Descending Forward Locomotor Drive (D_fwd):")
     add_pure_equation_image("eq08_neuromuscular_motor_tone.png", "Equation 8 | Neuromuscular Motor Tone (T_motor):")
     add_pure_equation_image("eq09_bipedal_coordination_index.png", "Equation 9 | Anti-Gravity Postural Tone (P_post):")
 
     add_h2("2.3 Reciprocal Bipedal Central Pattern Generator (CPG)")
-    add_bullet_guideline("Two-Oscillator Kuramoto Coupling", "Formulate the two-oscillator anti-phase Kuramoto coupling governing alternating left-right stepping, scaled by C_biped (Equation 10).")
-    add_bullet_guideline("Phase Noise & Ataxia", "Explain how pharmacological disruption of inhibitory circuits injects stochastic noise sigma_eta into the phase dynamic, generating clinical ataxia.")
-    add_bullet_guideline("Cadence & Stride Scaling", "Formulate how stepping frequency and stride length scale dynamically with forward drive (Equation 11).")
+    add_bullet_guideline("Two-Oscillator Kuramoto Coupling", "Explain the walking rhythm as two swings pushed in opposite phase; Equation 10 is the 'how tightly are the legs coupled' term. If you write 'Kuramoto', define it in a parenthesis (a standard math model for coupled rhythms) or drop the name.")
+    add_bullet_guideline("Phase Noise & Ataxia", "Explain the noise term in Equation 10 as the honest part: some drugs inject random jitter into the rhythm, and that jitter IS the staggering you see in the videos.")
+    add_bullet_guideline("Cadence & Stride Scaling", "Explain Equation 11 as everyday physics: want to go faster - take quicker, longer steps; a sedated brain asks for slower, shorter ones. Connect to the cadence column of Table 3.")
 
     add_pure_equation_image("eq10_reciprocal_biped_phase_coupling.png", "Equation 10 | Two-Oscillator Reciprocal Biped Phase Coupling & Noise:")
     add_pure_equation_image("eq11_cadence_and_stride_scaling.png", "Equation 11 | Stepping Cadence & Stride Length Scaling:")
 
     add_h2("2.4 MuJoCo 3D Physics Scaffold & Body-Weight Support Harness")
-    add_bullet_guideline("Anthropometric Dimensions", "Specify body mass (71.8 kg), standing height (1.75 m), and 12 actuated joints (hip flexion/adduction/rotation, knee flexion, ankle dorsiflexion/inversion).")
-    add_bullet_guideline("Joint Kinematics & Validation", "Formulate sagittal joint angle trajectories (Equation 12) and validate simulated joint trajectories against David A. Winter clinical norms (Table 2 below).")
-    add_bullet_guideline("Body-Weight Support (BWS) Overhead Harness", "Formulate the overhead viscoelastic carriage lift force of 635 N (Equation 13), explaining how it prevents unrecoverable crashes while capturing knee buckling and collapse.")
+    add_bullet_guideline("Anthropometric Dimensions", "List the body facts like a character sheet: 71.8 kg, 1.75 m tall, 12 motorized joints - and disclose the recent addition of a WAIST joint, because the trunk used to be welded straight and could not slump when muscles relaxed (a real relaxed body folds at the waist; discuss why that mattered).")
+    add_bullet_guideline("Joint Kinematics & Validation", "Explain the honesty check: we compare our simulated joint angles to David Winter's classic measured human walk (Table 2). Point at which joints agree and which disagree - the knee is the outlier, say so and discuss why (knee buckling is the failure mode we deliberately preserve).")
+    add_bullet_guideline("Body-Weight Support (BWS) Overhead Harness", "Explain the harness like a climbing gym auto-belay: a soft ceiling cord lifts 635 N so a collapsed patient hangs instead of tunneling through the floor, while knee buckles and posture drops still show through. Then disclose the recent release experiment: with the straps loosened (wider rotation limits), a fully drug-relaxed body now genuinely topples sideways/forward and settles ON the floor - a real collapse, not a float.")
 
     add_pure_equation_image("eq12_sagittal_joint_kinematics.png", "Equation 12 | Sagittal Joint Angle Trajectories (12-DOF Kinematics):")
     add_pure_equation_image("eq13_body_weight_support_harness.png", "Equation 13 | Active Body-Weight Support (BWS) Overhead Harness:")
@@ -604,11 +733,11 @@ def build_template_document():
     # Section 3: Empirical Locomotion Performance
     # =============================================================
     add_h1("Section 3: Empirical Locomotion Performance & Cross-Model Comparison")
-    add_guide_banner("Present and analyze the full quantitative locomotion dataset across all 18 pharmacological conditions, contrasting the simulated fish hindbrain readout with human bipedal walking.")
+    add_guide_banner("This is the money section: teach the reader how to READ the tables before they scan them (what each column means, which side is cause and which is effect), then let the numbers talk.")
 
     add_h2("3.1 Master Empirical Locomotion Matrix")
-    add_bullet_guideline("Dataset Presentation", "Present Table 3 below, analyzing the differential sensitivity of the zebrafish hindbrain readout (descending intent variables, rate-normalized) versus the humanoid biped (speed in m/s, Cadence in Hz, Motor Tone, and Gait Mode).")
-    add_bullet_guideline("Phenotypic Categorization", "Analyze why Lidocaine (flaccid arrest) and Jungle Juice (toxicological collapse) trigger complete motor freeze, whereas stimulants trigger hyper-cadence and THC triggers ataxic gait.")
+    add_bullet_guideline("Dataset Presentation", "Explain Table 3's two halves in one pass: the left columns are the FISH numbers (unit-free: how hard the brain wants to go), the right columns are the HUMAN numbers (meters per second, steps per second). Say plainly: fish columns are the cause, human columns are the effect.")
+    add_bullet_guideline("Phenotypic Categorization", "Group the story by outcomes a person can picture: 'won't move at all' (lidocaine, jungle juice - the shaded red rows), 'too energetic' (stimulants), 'sluggish' (sedatives), 'staggering' (THC - the amber row), 'looks fine' (CBD). Explain what the red and amber shading marks mean the first time they appear.")
 
     # INSERT TABLE 3: Master Locomotion Matrix (COMPLETE - All 18 conditions, zero ellipses)
     add_table_heading(
@@ -699,8 +828,8 @@ def build_template_document():
             set_cell_margins(cell, top=45, bottom=45, left=45, right=45)
 
     add_h2("3.2 Class-Stratified Locomotor Statistics & Statistical Validation")
-    add_bullet_guideline("Grouped Analysis", "Reference Table 4 below to analyze pooled cohort statistics (mean ± SD) across pharmacological classes: Psychostimulants, Sedatives/Antihistamines, Cannabinoids/Relaxants, and Local Anesthetics.")
-    add_bullet_guideline("Statistical Divergence", "Discuss why the biped model exhibits larger translational effect sizes and clinical discriminability compared to the scalar hindbrain readout alone.")
+    add_bullet_guideline("Grouped Analysis", "Explain Table 4's averages in reader-friendly terms: each drug family gets one average and a ± spread. Teach the spread: a big ± inside a family means 'drugs in this family do NOT all behave alike' - that's a discussion point, not a footnote.")
+    add_bullet_guideline("Statistical Divergence", "Discuss the honest headline: the human body showed BIGGER, cleaner differences between drugs than the raw fish number alone. Discuss why - the body adds its own failure modes (buckling knees, staggering, collapsing) that amplify a small chemical change into a visible walk change.")
 
     # INSERT TABLE 4: Class-Stratified Locomotor Statistics (COMPLETE - Zero ellipses)
     add_table_heading(
@@ -781,32 +910,37 @@ def build_template_document():
     # Section 4: Mechanistic Discussion by Pharmacological Class
     # =============================================================
     add_h1("Section 4: Mechanistic Pharmacology & Pharmacokinetics")
-    add_guide_banner("Conduct in-depth mechanistic evaluations across drug classes and document 24-hour pharmacokinetic profiles and fatigue modeling.")
+    add_guide_banner("Tell the mechanism stories so a classmate can retell them: one plain-English sentence of what the drug does to the brain, one of what the body then does on the floor. Numbers from the tables carry the rigor; the prose carries the understanding.")
 
     add_h2("4.1 Central Nervous System Stimulants (Caffeine, Vyvanse, Nicotine, Wellbutrin)")
-    add_bullet_guideline("Receptor Actions", "Detail catecholaminergic pathways: dopamine/norepinephrine reuptake inhibition (Lisdexamfetamine, Bupropion), adenosine A2A antagonism (Caffeine), and alpha-4-beta-2 nicotinic agonism (Nicotine).")
-    add_bullet_guideline("Gait Modifications", "Describe hyper-cadence (up to 1.33 Hz), increased stride length, and elevated neuromuscular vigor.")
+    add_bullet_guideline("Receptor Actions", "Give each stimulant its one-line job: caffeine blocks the 'sleepiness' chemical (adenosine); Vyvanse and Wellbutrin trap dopamine in the gap between neurons so it keeps stimulating. When first used, say what a neurotransmitter is.")
+    add_bullet_guideline("Gait Modifications", "Describe the visible change like watching the videos: faster steps (up to 1.33 per second), longer strides, more muscle vigor. Quote the exact numbers from Table 3 next to every claim.")
 
     add_h2("4.2 Local Anesthetics & Sodium Channel Blockers (Lidocaine)")
-    add_bullet_guideline("Biophysical Mechanism", "Explain pore-blocking of axonal Nav1.1/1.2 channels, halting action potential generation and eliminating motor tone (T_motor = 0.25).")
-    add_bullet_guideline("Clinical Failure Mode", "Describe complete bilateral knee buckling, flaccid extensor collapse, and suspension in the overhead BWS harness.")
+    add_bullet_guideline("Biophysical Mechanism", "Give the wire-cutting image: sodium channels are the nerve's copper wire; lidocaine jams them, no signal can travel, tone collapses to near zero (0.25). This is THE mechanism to explain slowly and well.")
+    add_bullet_guideline("Clinical Failure Mode", "Describe the fall step by step: both knees fold inward, the patient sags in the harness at ~0.5 m, speed goes to ~0. Then tell the release experiment: straps loosened, the fully relaxed body topples and settles ON the floor - dead weight, standing on nothing.")
 
     add_h2("4.3 Sedative-Hypnotics & Antihistamines (Diphenhydramine, Gravol, Mirtazapine)")
-    add_bullet_guideline("Receptor Actions", "Explain central H1 receptor blockade suppressing ascending arousal systems (tuberomammillary nucleus; conserved hrh1 wakefulness axis in larval zebrafish, Sundvik 2011).")
-    add_bullet_guideline("Gait Modifications", "Detail sluggish stepping (velocity 0.97 m/s, cadence 0.82 Hz) and reduced ankle dorsiflexion, causing subtle shuffling.")
+    add_bullet_guideline("Receptor Actions", "Give the one-line job: these block the histamine 'stay awake' signal - and that signal works the same way in fish (Sundvik 2011), which is why the drowsiness shows up in our fish-driven walk too.")
+    add_bullet_guideline("Gait Modifications", "Describe the sleepy walk precisely: slower steps (cadence 0.82 per second), a subtle foot-drag, but NO falls - a perfect middle case to discuss where 'drugged' sits between 'fine' and 'collapsed'.")
 
     add_h2("4.4 Cannabinoid Bifurcation: THC Ataxia vs. CBD Motor Preservation")
-    add_bullet_guideline("Molecular Divergence", "Contrast Delta-9-THC partial agonism at CB1 receptors against Cannabidiol (CBD) non-intoxicating multi-target modulation.")
-    add_bullet_guideline("Clinical Contrast", "Explain how THC suppresses presynaptic GABA release (cnr1 terminal modulation) and desynchronizes spinal commissural inhibition, causing ataxic stumbling (C_biped = 0.380), while CBD preserves intact bipedal walking (C_biped = 1.00).")
+    add_bullet_guideline("Molecular Divergence", "Explain in plain words: THC plugs into the brain's CB1 'volume knob' receptor and scrambles timing; CBD nudges many systems gently and does not intoxicate. Different molecules, same plant - that's the hook of the subsection.")
+    add_bullet_guideline("Clinical Contrast", "Describe the contrast as a before/after: THC's walk staggers (coordination score 0.38); CBD's walk is indistinguishable from clean (1.00). Pose the discussion question the paper should answer: why does hitting the SAME receptor family produce such different walks?")
 
     add_h2("4.5 Multi-Compound Polypharmacy: The 'Jungle Juice' Collapse")
-    add_bullet_guideline("Toxicological Synergy", "Explain simultaneous conflicting receptor activation and blockade across adrenergic, histaminergic, GABAergic, and sodium channel systems.")
-    add_bullet_guideline("Physical Manifestation", "Document complete locomotor arrest (velocity 0.07 m/s, motor tone 0.27) with uncoordinated limb flailing.")
+    add_bullet_guideline("Toxicological Synergy", "Give the kitchen-sink analogy: five drugs each hitting different systems at once - wires jammed, 'stay awake' blocked, dopamine scrambled - leaves no system standing in to compensate. That's polypharmacy; define the word here.")
+    add_bullet_guideline("Physical Manifestation", "Document the worst case in numbers a reader can visualize: speed ~0.07 m/s (basically frozen), tone 0.27, uncontrolled flailing - and note it is the ONLY condition as bad as total nerve block.")
 
     add_h2("4.6 24-Hour Pharmacokinetics & Homeostatic Sleep Pressure (Process S)")
-    add_bullet_guideline("Two-Compartment Model", "Formulate biexponential plasma concentration curves (Equation 14), defining absorption (k_a), elimination (beta), and distribution volumes.")
-    add_bullet_guideline("Sleep Dynamics & Rebound Fatigue", "Formulate Process S homeostatic sleep pressure dynamics (Equation 15) and receptor masking with acute rebound fatigue (Equation 16).")
-    add_bullet_guideline("Pharmacokinetic Telemetry", "Reference Table 5 below to contrast peak drug action (2 h) versus washout state (12 h), explaining acute post-stimulant crashes.")
+    add_bullet_guideline("Two-Compartment Model", "Explain the timeline without the word 'biexponential': drugs enter blood fast (absorption) and leave it slow (elimination); Equation 14 draws both. Define 'half-life' the first time you use it - the time for half the drug to leave.")
+    add_bullet_guideline("Sleep Dynamics & Rebound Fatigue", "Explain Process S as a tiredness battery that fills while you're awake and empties when you sleep; stimulants COVER the gauge rather than recharging it (Equation 15), which is why the afternoon crash always catches up (Equation 16).")
+    add_bullet_guideline("Pharmacokinetic Telemetry", "Send the reader hunting in Table 5: find the morning coffee crash by comparing the 2-hour peak column against the 12-hour washout column. One worked example beats a paragraph of prose.")
+
+    add_h2("4.7 The Interactive Reflex Laboratory & Whole-Body Relaxation (Recent Work)")
+    add_bullet_guideline("Virtual Hospital", "Describe the game we built for outreach days: a visitor walks in, meets a 'patient' under a chosen drug at a chosen dose, and runs three bedside exams - knee tap, flashlight pupil test, and a surprise startle - watching the 3-D body respond live (animated GIF saved per exam). This is the public-facing wing of the project, not extra simulation physics.")
+    add_bullet_guideline("The Tap Test's Honest Secret", "Disclose the limitation plainly: this model has no genuine spinal reflex arc, so the knee-tap response measures tone-scaled muscle recovery (84% rebound healthy, clearly less under lidocaine - graded hyporeflexia). State what would make it a REAL reflex loop (muscle-spindle afferents, spinal interneurons) and list it as the top future upgrade.")
+    add_bullet_guideline("All Muscles Relax", "Document the verification every reviewer will ask about: a neurotoxin relaxes EVERYTHING, not just the legs - arms stop swinging, ankles lose their erect hold, and the trunk now slumps at the added waist joint. Collapse is triggered by SUSTAINED simultaneous knee buckling (both knees past 0.25 radians for over 0.45 s) - the discriminator that separates a genuine collapse from a fast toe-off transiency.")
 
     add_pure_equation_image("eq14_two_compartment_pharmacokinetics.png", "Equation 14 | Two-Compartment Biexponential Plasma Clearance:")
     add_pure_equation_image("eq15_process_s_sleep_dynamics.png", "Equation 15 | Process S Homeostatic Sleep Pressure Dynamics:")
@@ -877,16 +1011,16 @@ def build_template_document():
     # Section 5: Scientific Limitations & Methodological Constraints
     # =============================================================
     add_h1("Section 5: Scientific Limitations & Methodological Constraints")
-    add_guide_banner("Critically evaluate experimental boundaries, simplifications, and necessary future extensions.")
-    add_bullet_guideline("Pharmacokinetic Simplifications", "Acknowledge that standard two-compartment clearance assumes baseline hepatic function without accounting for CYP2D6/CYP3A4 genetic polymorphisms or drug-drug interactions.")
-    add_bullet_guideline("Sensory Feedback Loops", "Note that the current biped CPG relies primarily on feedforward descending drive and joint damping, omitting microscopic muscle spindle (Ia/II afferent) and Golgi tendon organ reflex loops.")
-    add_bullet_guideline("Larval Brain vs. Mammalian Cortex Divergence", "Discuss the evolutionary divergence between the larval zebrafish forebrain and the 6-layered mammalian neocortex, noting that complex motor planning is abstracted into descending readout weights.")
+    add_guide_banner("This section is where judges separate good projects from great ones: name what we left out, say why, and say what fixing it would change. NO squirming.")
+    add_bullet_guideline("Pharmacokinetic Simplifications", "Say it plainly: we model a hypothetical standard liver; real people clear drugs at different speeds depending on their genetics (liver enzymes like CYP2D6) and on mixing drugs. One honest sentence per missing piece.")
+    add_bullet_guideline("Sensory Feedback Loops", "Say it plainly: our walker runs mostly 'blind' - no ankle muscle-stretch sensors (spindles) or tendon-force sensors telling the spine what actually happened. The reflex lab shows the appearance of a leg reflex, not the wiring of one - flag a real spinal reflex loop as THE top priority upgrade.")
+    add_bullet_guideline("Larval Brain vs. Mammalian Cortex Divergence", "Say it plainly: fish brains have no six-layer cortex; our 'thinking' is a handful of descending intent numbers. Then argue - with one concrete example - which drug behaviors this shortcut CAN capture (freezing, staggering) and which it CANNOT (euphoria, focus).")
 
     # =============================================================
     # Section 6: Scientific References (MLA 9th Edition)
     # =============================================================
     add_h1("Section 6: Scientific References")
-    add_guide_banner("Format all citations in strict accordance with MLA 9th Edition standards. Core foundational references include:")
+    add_guide_banner("Every claim in the paper needs a citation in MLA 9th format; if a number has no source beneath it (model output from our own simulations), say so explicitly instead of borrowing a citation. Core foundational references include:")
 
     refs = [
         "Borbély, Alexander A., et al. 'The Two-Process Model of Sleep Regulation: A Reappraisal.' Journal of Sleep Research, vol. 25, no. 2, 2016, pp. 131–143.",
