@@ -237,6 +237,9 @@ class HumanPipelineSim:
             bal_raw = BALANCE_BASE + BALANCE_GAIN_SCALE * float(np.clip(
                 intent.motor_tone * intent.posture_height * intent.coordination, 0.0, 1.0))
             self.body.balance_gain = (0.90 * self.body.balance_gain + 0.10 * bal_raw)
+            # Generalized relaxant: trunk postural springs relax with tone too
+            # (a flaccid walker slumps toward the straps, not gyro-erect).
+            self.body.set_trunk_tone(intent.motor_tone)
             state = self.body.step(joint_targets)
             if viewer is not None and step_idx % 8 == 0:
                 if not viewer.is_running():
@@ -383,6 +386,8 @@ class HumanPipelineSim:
             bal_raw = BALANCE_BASE + BALANCE_GAIN_SCALE * float(np.clip(
                 intent.motor_tone * intent.posture_height * intent.coordination, 0.0, 1.0))
             self.body.balance_gain = (0.90 * self.body.balance_gain + 0.10 * bal_raw)
+            # Generalized relaxant: trunk postural springs relax with tone too
+            self.body.set_trunk_tone(intent.motor_tone)
             state = self.body.step(joint_targets)
 
             if step_idx % render_interval == 0:

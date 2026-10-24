@@ -63,11 +63,17 @@ def get_humanoid_xml(
 
       <body name="pelvis" pos="0 0 0">
         <!-- Viscoelastic suspension harness attached to pelvis/torso -->
-        <joint name="harness_z" type="slide" axis="0 0 1" stiffness="{stiff_z:.1f}" damping="{damp_z:.1f}" range="-0.35 0.35"/>
-        <joint name="harness_y" type="slide" axis="0 1 0" stiffness="{stiff_y:.1f}" damping="{damp_y:.1f}" range="-0.30 0.30"/>
-        <joint name="pelvis_roll" type="hinge" axis="1 0 0" stiffness="{stiff_rot:.1f}" damping="{damp_rot:.1f}" range="-0.25 0.25"/>
-        <joint name="pelvis_pitch" type="hinge" axis="0 1 0" stiffness="{stiff_rot:.1f}" damping="{damp_rot:.1f}" range="-0.30 0.30"/>
-        <joint name="pelvis_yaw" type="hinge" axis="0 0 1" stiffness="{0.6 * stiff_rot:.1f}" damping="{0.6 * damp_rot:.1f}" range="-0.25 0.25"/>
+        <!-- Vertical range allows the straps to go fully slack (~0.9 m): if
+             the walker collapses, the harness lets go and the body drops to
+             the floor -- a harnessed person is never levitated mid-air. -->
+        <joint name="harness_z" type="slide" axis="0 0 1" stiffness="{stiff_z:.1f}" damping="{damp_z:.1f}" range="-0.90 0.35"/>
+        <joint name="harness_y" type="slide" axis="0 1 0" stiffness="{stiff_y:.1f}" damping="{damp_y:.1f}" range="-0.60 0.60"/>
+        <!-- Angular straps: the tone-scaled springs hold normal gait within
+             the tight working envelope; the wide hard stops only matter
+             after limp release (dead straps cannot stop a topple). -->
+        <joint name="pelvis_roll" type="hinge" axis="1 0 0" stiffness="{stiff_rot:.1f}" damping="{damp_rot:.1f}" range="-1.5 1.5"/>
+        <joint name="pelvis_pitch" type="hinge" axis="0 1 0" stiffness="{stiff_rot:.1f}" damping="{damp_rot:.1f}" range="-1.6 1.6"/>
+        <joint name="pelvis_yaw" type="hinge" axis="0 0 1" stiffness="{0.6 * stiff_rot:.1f}" damping="{0.6 * damp_rot:.1f}" range="-1.0 1.0"/>
         <camera name="trackcam" pos="-2.8 -2.0 0.8" xyaxes="0.58 -0.81 0 0.24 0.17 0.95"/>
         <geom name="pelvis_geom" type="box" size="0.11 0.16 0.09" material="legs_mat" mass="14.0"/>
 """
@@ -108,7 +114,12 @@ def get_humanoid_xml(
 
 {root_block}
         <!-- Upper Torso & Head -->
+        <!-- Waist: trunk pitch DOF (axis 0 1 0, + = forward flexion). The
+             back is muscle: an erect torso is an active back-extensor hold,
+             and under a relaxant the trunk slumps instead of staying welded
+             gyro-erect. Passive ligament stiffness ~25 N*m/rad. -->
         <body name="torso" pos="0 0 0.26">
+          <joint name="waist_pitch" type="hinge" axis="0 1 0" range="-0.35 1.6" damping="6.0" stiffness="25.0"/>
           <geom name="torso_geom" type="box" size="0.11 0.16 0.24" material="torso_mat" mass="24.0"/>
           <body name="head" pos="0 0 0.435">
             <geom name="head_geom" type="sphere" size="0.11" material="skin" mass="4.2"/>
@@ -177,6 +188,8 @@ def get_humanoid_xml(
     <position name="act_right_hip_roll" joint="right_hip_roll" kp="150" kv="15"/>
     <position name="act_right_knee" joint="right_knee" kp="500" kv="25"/>
     <position name="act_right_ankle" joint="right_ankle" kp="60" kv="6"/>
+    <!-- trunk extensors: strong erector spinae hold, active slumping under relaxants -->
+    <position name="act_waist_pitch" joint="waist_pitch" kp="800" kv="40"/>
     <position name="act_left_shoulder_pitch" joint="left_shoulder_pitch" kp="40" kv="4"/>
     <position name="act_left_elbow" joint="left_elbow" kp="25" kv="2.5"/>
     <position name="act_right_shoulder_pitch" joint="right_shoulder_pitch" kp="40" kv="4"/>
@@ -349,6 +362,26 @@ class HumanoidBodySim:
         # Harness joint IDs (for load metrics)
         self.harness_z_id = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, "harness_z") if harness else -1
 
+        # Knee-buckle collapse detector: a knee that stays deeply flexed while
+        # carrying the body is a genuine extensor collapse -- no servo holds a
+        # person up on buckled knees. Knees load only in stance, and the swing
+        # knee flexes deep during normal gait, so the trigger requires BOTH
+        # knees deep-flexed together (never the case in healthy walk; always
+        # the case when the stance apparatus collapses). After a short
+        # non-recoverable dwell, motor drive is cut and the harness lets go so
+        # the body truly falls.
+        self.left_knee_jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, "left_knee")
+        self.right_knee_jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, "right_knee")
+        # Calibrated separation (measured 12 s healthy walk vs sustained
+        # tone-loss hover): longest SIMULTANEOUS bilateral knee flexion
+        # > 0.25 rad is 0.11 s in healthy gait (swing/toe-off transients) vs
+        # 0.94+ s under postural collapse. 0.25 rad / 0.45 s dwell keeps a
+        # >=4x margin on both sides.
+        self.knee_buckle_rad = 0.25      # ~14 deg bilateral deep flexion
+        self.knee_buckle_dwell_s = 0.45  # sustained buckle = not a transient
+        self._buckle_dwell = 0.0         # running dwell timer
+        self.buckle_release_t = None     # sim time of knee-buckle release
+
         # Camera name for viewer
         self.track_cam_name = "trackcam"
 
@@ -402,6 +435,10 @@ class HumanoidBodySim:
         self.rest_bias: dict[str, float] = {}   # pose bias: joint name -> rad
         self.kp_scale: dict[str, float] = {}    # per-actuator gain multipliers
         self._base_gain = None                  # captured on first apply
+        self._trunk_base: dict[str, float] | None = None  # trunk spring stiffness
+        self._harness_damp_base: dict[str, float] | None = None  # strap damping
+        self._gain_backup: np.ndarray | None = None       # pristine gains (reset)
+        self._bias_backup: np.ndarray | None = None       # pristine biases (reset)
 
     def release_actuators(self):
         """Kill all motor drive: joints go limp (gravity + damping only).
@@ -410,14 +447,120 @@ class HumanoidBodySim:
         from this step on the body is a pure ragdoll under full MuJoCo physics
         -- knees buckle and the body actually collapses to the floor instead
         of being held in a static buckled-knee pose by position servos.
+
+        In harness mode the straps go slack too: the harness_z / harness_y
+        suspension springs and the pelvis orientation springs are zeroed so
+        nothing reels the limp body back up (no levitation -- gravity wins).
+
+        A real flaccid collapse is asymmetric (nobody lands in a perfectly
+        symmetric kneel): a small deterministic topple seed is applied so
+        the ragdoll crumples fully to the ground instead of balancing in a
+        metastable kneeling heap.
         """
         self.mj_model.actuator_gainprm[:, 0] = 0.0
         self.mj_model.actuator_biasprm[:, 1] = 0.0
+        self._seed_collapse_topple()
+        if self.harness:
+            for jname in ("harness_z", "harness_y", "pelvis_roll", "pelvis_pitch", "pelvis_yaw"):
+                jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                if jid >= 0:
+                    self.mj_model.jnt_stiffness[jid] = 0.0
+            # Dead straps have no drag either: the heavy suspension damping
+            # would otherwise keep the released body from tipping over.
+            if self._harness_damp_base is None:
+                self._harness_damp_base = {}
+                for jname in ("harness_z", "harness_y", "pelvis_roll", "pelvis_pitch", "pelvis_yaw"):
+                    jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                    if jid >= 0:
+                        dof = self.mj_model.jnt_dofadr[jid]
+                        self._harness_damp_base[jname] = float(self.mj_model.dof_damping[dof])
+                for jname in ("harness_z", "harness_y", "pelvis_roll", "pelvis_pitch", "pelvis_yaw"):
+                    jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                    if jid >= 0:
+                        dof = self.mj_model.jnt_dofadr[jid]
+                        self.mj_model.dof_damping[dof] = min(2.0, self._harness_damp_base[jname])
         self.actuators_released = True
+
+    def _seed_collapse_topple(self) -> None:
+        """Kicks a small topple rate into the root joints at limp release.
+
+        Deterministic (seeded from step count) so trials stay reproducible.
+        Magnitude ~0.3 rad/s: invisible during the remaining stand, enough to
+        break the metastable symmetric kneel so gravity finishes a full
+        ground collapse.
+        """
+        rng = np.random.default_rng(self.step_count)
+        w = 1.0
+        if self.harness:
+            # Forward flaccid crumple: pitch folds forward deterministically
+            # (straps dead -> nothing holds the torso), roll/lateral drift
+            # random so the shape varies between trials.
+            for jname, base in (("pelvis_pitch", 1.1), ("waist_pitch", 0.8), ("pelvis_roll", 0.8)):
+                jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                if jid >= 0:
+                    dof = self.mj_model.jnt_dofadr[jid]
+                    sign = 1.0 if jname != "pelvis_roll" else float(rng.choice([-1.0, 1.0]))
+                    self.mj_data.qvel[dof] += sign * base * (1.0 + 0.4 * float(rng.random()))
+            # Lateral strap drift so the crumple develops off-center (the
+            # wide-friction foot brace pins a perfectly vertical kneel).
+            jid_y = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, "harness_y")
+            if jid_y >= 0:
+                self.mj_data.qvel[self.mj_model.jnt_dofadr[jid_y]] = float(rng.choice([-1.0, 1.0])) * 0.25
+        else:
+            jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, "root")
+            if jid >= 0:
+                dof = self.mj_model.jnt_dofadr[jid] + 3   # angular rates base
+                self.mj_data.qvel[dof] += float(rng.choice([-1.0, 1.0])) * w
+                self.mj_data.qvel[dof + 1] += float(rng.choice([-1.0, 1.0])) * w * 0.6
+
+    def set_trunk_tone(self, tone: float) -> None:
+        """Relax trunk orientation springs with motor tone (harness mode).
+
+        The pelvis pitch/roll/yaw springs model trunk postural stiffness
+        backed by the harness straps. A muscle relaxant relaxes the trunk
+        muscles too, so the torso slumps proportionally toward the straps
+        instead of staying gyro-erect while the walker is still up.
+        A no-op in freejoint mode (torso is rigidly coupled) and after limp
+        release (the straps are dead).
+        """
+        if self.actuators_released or not self.harness:
+            return
+        if self._trunk_base is None:
+            self._trunk_base = {}
+            for jname in ("pelvis_pitch", "pelvis_roll", "pelvis_yaw"):
+                jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                if jid >= 0:
+                    self._trunk_base[jname] = float(self.mj_model.jnt_stiffness[jid])
+        scale = 0.35 + 0.65 * float(np.clip(tone, 0.0, 1.0))
+        for jname, stiff in self._trunk_base.items():
+            jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+            if jid >= 0:
+                self.mj_model.jnt_stiffness[jid] = stiff * scale
 
     def reset(self):
         mujoco.mj_resetData(self.mj_model, self.mj_data)
         self.actuators_released = False
+        self._buckle_dwell = 0.0
+        self.buckle_release_t = None
+        # Restore model-level state a limp release / trunk relaxation touched
+        # (model arrays persist across mj_resetData).
+        if self._gain_backup is not None:
+            self.mj_model.actuator_gainprm[:, 0] = self._gain_backup
+            self.mj_model.actuator_biasprm[:, 1] = self._bias_backup
+            self._gain_backup = None
+            self._bias_backup = None
+        if self._trunk_base is not None:
+            for jname, stiff in self._trunk_base.items():
+                jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                if jid >= 0:
+                    self.mj_model.jnt_stiffness[jid] = stiff
+            self._trunk_base = None
+        if self._harness_damp_base is not None:
+            for jname, damp in self._harness_damp_base.items():
+                jid = mujoco.mj_name2id(self.mj_model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                if jid >= 0:
+                    self.mj_model.dof_damping[self.mj_model.jnt_dofadr[jid]] = damp
+            self._harness_damp_base = None
         if self.harness is False:
             self._center_rest_com()
         self.pos_log.clear()
@@ -526,6 +669,23 @@ class HumanoidBodySim:
         so when drive collapses the knees genuinely buckle and the whole body
         falls under real gravity.
         """
+        # Knee-buckle collapse detection first (uses current joint state).
+        # Sustained bilateral deep knee flexion = real postural failure: cut
+        # the motors and let gravity finish the fall. Note the harness BWS
+        # actuator is a motor with gear=1, so zeroing gainprm in
+        # release_actuators() also kills the lift -- the body drops in every
+        # mode.
+        if not self.actuators_released and self.left_knee_jid >= 0 and self.right_knee_jid >= 0:
+            kl = self.mj_data.qpos[self.mj_model.jnt_qposadr[self.left_knee_jid]]
+            kr = self.mj_data.qpos[self.mj_model.jnt_qposadr[self.right_knee_jid]]
+            if kl > self.knee_buckle_rad and kr > self.knee_buckle_rad:
+                self._buckle_dwell += self.dt
+                if self._buckle_dwell >= self.knee_buckle_dwell_s:
+                    self.release_actuators()
+                    self.buckle_release_t = self.step_count * self.dt
+            else:
+                self._buckle_dwell = 0.0
+
         # Set control targets (with vestibulospinal balance biases)
         if not self.harness and not self.actuators_released:
             joint_targets = dict(joint_targets)
@@ -648,7 +808,11 @@ class HumanoidBodySim:
         com_height_mean = float(np.mean(z_positions))
         min_height = float(np.min(z_positions))
         # Fall detected if pelvis height drops below 0.45 m (floor is at 0.0 m)
-        fall_detected = bool(min_height < 0.45)
+        # OR if the knee-buckle collapse released the motors (terminal kneel/
+        # crumple rests the pelvis on folded legs at ~0.5 m -- no recovery is
+        # possible after release, so it is a fall outcome regardless of the
+        # resting height).
+        fall_detected = bool(min_height < 0.45) or bool(self.buckle_release_t is not None)
 
         # 7. Harness Load
         harness_mean = float(np.mean(self.harness_load_log)) if len(self.harness_load_log) else 0.0

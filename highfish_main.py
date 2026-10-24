@@ -339,6 +339,10 @@ Commands:
                   PubChem CID, and verified zebrafish receptor systems (--brand)
   timelapse       Long-term PK/PD chronobiology simulation across hours/days
                   (--drug <name> --dose F --hours F --out FILE --fps N --brand)
+  reflex          Interactive virtual-hospital REFLEX LAB (mini-game): examine
+                  a patient under any catalog drug -- patellar tap, pupillary
+                  light reflex, looming startle -- with a vehicle baseline.
+                  (terminal only, no window needed; same as --reflex)
 
 Help:
   --help, -h, help    Show this message
@@ -373,6 +377,12 @@ def main():
         cmd_human_metrics(sys.argv[2:] if len(sys.argv) > 2 else [])
     elif sys.argv[1] == "human-intent":
         cmd_human_intent(sys.argv[2:] if len(sys.argv) > 2 else [])
+    elif sys.argv[1] in ("reflex", "--reflex"):
+        scripts_dir = os.path.join(HERE, "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import reflex_lab
+        reflex_lab.main()
     elif sys.argv[1] == "timelapse":
         cmd_timelapse(sys.argv[2:] if len(sys.argv) > 2 else [])
     else:

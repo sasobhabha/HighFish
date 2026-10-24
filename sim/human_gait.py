@@ -27,12 +27,12 @@ Biological & Kinematic Foundations:
   3. Upper Body Counter-Balance (Arm Swing):
      Contralateral arm swing (left arm in phase with right leg, right arm in phase with
      left leg) naturally counteracts vertical-axis angular momentum of the pelvis/torso,
-     reducing whole-body metabolic cost and maintaining heading stability (Meyns et al. 2013).
-
-  4. Pathological Perturbations:
+     reducing whole-body metabolic cost and maintaining heading stability (Meyns et al. 2013).   4. Pathological Perturbations:
      - Na_v channel block (Lidocaine / local anesthetics):
        Reduces motor tone and extensor force capacity -> knee buckling, stance crouching,
-       and diminished stride length.
+       and diminished stride length. Tone collapse is GENERALIZED: arms, elbows and
+       hip abduction relax together with the legs (a relaxant never acts only on
+       the knees); flaccid ankles lose the erect hold (foot drop).
      - GABA_A block (Rdl / picrotoxin):
        Weakens reciprocal coupling -> inter-leg phase drift and ataxic stumbling.
 """
@@ -55,6 +55,7 @@ HUMANOID_JOINTS = [
     "right_hip_pitch", "right_hip_roll", "right_knee", "right_ankle",
     "left_shoulder_pitch", "left_elbow",
     "right_shoulder_pitch", "right_elbow",
+    "waist_pitch",
 ]
 
 
@@ -172,6 +173,7 @@ class BipedGaitKinematics:
             "left_elbow": 0.15,
             "right_shoulder_pitch": 0.0,
             "right_elbow": 0.15,
+            "waist_pitch": 0.0,
         }
         self.prev_targets = dict(self.rest_angles)
 
@@ -203,14 +205,25 @@ class BipedGaitKinematics:
         if intent.freeze or intent.mode in ("freeze", "stand") or intent.forward_drive < 0.05:
             # Postural buckling if motor tone is severely impaired
             buckle = float(np.clip(1.0 - intent.posture_height, 0.0, 0.8))
+            tone = float(np.clip(intent.motor_tone, 0.1, 1.0))
             targets["left_knee"] = 0.0 + 0.40 * buckle
             targets["right_knee"] = 0.0 + 0.40 * buckle
             targets["left_hip_pitch"] = -0.15 * buckle
             targets["right_hip_pitch"] = -0.15 * buckle
+            # Generalized relaxation: the arms droop as tone falls (elbows
+            # straighten toward the limp hang, shoulders lose the held pose)
+            # and flaccid ankles sag into dorsiflexion (foot drop), instead
+            # of only the knees buckling while the rest of the body is held
+            # by servos at full strength.
             targets["left_shoulder_pitch"] = 0.0
             targets["right_shoulder_pitch"] = 0.0
-            targets["left_elbow"] = 0.15
-            targets["right_elbow"] = 0.15
+            targets["left_elbow"] = 0.15 * tone
+            targets["right_elbow"] = 0.15 * tone
+            targets["left_ankle"] = -0.15 * (1.0 - tone)
+            targets["right_ankle"] = -0.15 * (1.0 - tone)
+            # Trunk: the back is muscle too. Erect torso is an active hold;
+            # as tone collapses the trunk slumps forward (flexion is +pitch).
+            targets["waist_pitch"] = 0.45 * (1.0 - tone)
             targets["rail_vx"] = 0.0
             return self._apply_slew_limit(targets, dt)
 
@@ -284,15 +297,24 @@ class BipedGaitKinematics:
         targets["right_ankle"] = ar
 
         # Lateral hip roll: slight outward abduction for clearance + turn trimming
-        targets["left_hip_roll"] = 0.02 + 0.05 * max(0.0, turn)
-        targets["right_hip_roll"] = 0.02 + 0.05 * max(0.0, -turn)
+        # (abduction hold also relaxes with motor tone)
+        targets["left_hip_roll"] = (0.02 + 0.05 * max(0.0, turn)) * tone
+        targets["right_hip_roll"] = (0.02 + 0.05 * max(0.0, -turn)) * tone
 
         # Upper body counter-balance: arms swing anti-phase to ipsilateral leg
-        # (left arm swings with right leg, right arm with left leg)
-        targets["left_shoulder_pitch"] = -hl * 0.70
-        targets["right_shoulder_pitch"] = -hr * 0.70
-        targets["left_elbow"] = 0.35 + 0.15 * np.sin(phi_r)
-        targets["right_elbow"] = 0.35 + 0.15 * np.sin(phi_l)
+        # (left arm swings with right leg, right arm with left leg).
+        # The elbow oscillation is draped by motor tone as well: a muscle
+        # relaxant weakens the arms too, so the elbow swing shrinks toward
+        # the limp straight hang as tone collapses (shoulder swing already
+        # inherits tone via the scaled hip stroke).
+        elbow_l_cmd = 0.35 + 0.15 * np.sin(phi_r)
+        elbow_r_cmd = 0.35 + 0.15 * np.sin(phi_l)
+        targets["left_elbow"] = 0.15 + (elbow_l_cmd - 0.15) * tone
+        targets["right_elbow"] = 0.15 + (elbow_r_cmd - 0.15) * tone
+
+        # Trunk: erect posture is an active back-extensor hold (Winter Ch. 4).
+        # Low tone / low posture -> the trunk slumps forward while walking.
+        targets["waist_pitch"] = 0.35 * (1.0 - posture)
 
         return self._apply_slew_limit(targets, dt)
 
