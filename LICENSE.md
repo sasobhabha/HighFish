@@ -1,0 +1,1 @@
+The code in this repository is Shashwath Manjunath's own work. Cloning, forking, or copying the contents this repository in any manner without written permission is a violation of Shashwath's copyright.
